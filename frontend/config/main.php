@@ -44,7 +44,7 @@ return [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
-                    ['class' => 'yii\rest\UrlRule', 'controller' => 'policy', 'only' => ['get', 'post']]
+                    ['class' => 'yii\rest\UrlRule', 'controller' => 'policy']
             ],
         ],
     ],
