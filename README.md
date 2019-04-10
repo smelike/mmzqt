@@ -3,7 +3,7 @@
         <img src="https://avatars0.githubusercontent.com/u/993323" height="100px">
     </a>
     <h1 align="center">Try and build something new.</h1>
-    > Yii 2 Advanced Project Template
+    <h3 align="center">Yii 2 Advanced Project Template</h3>
     <br>
 </p>
 
