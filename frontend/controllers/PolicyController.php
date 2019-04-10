@@ -1,32 +1,57 @@
 <?php
 
-	namespace frontend\controllers;
+namespace frontend\controllers;
+
+//use yii\rest\ActiveController;
+use yii\rest\Controller;
+use yii\data\ActiveDataProvider;
+use common\models\Policy;
+use yii\filters\VerbFilter;
+
+class PolicyController extends Controller
+{
 	
-	use yii\rest\ActiveController;
-	use yii\filters\VerbFilter;
+	public $modelClass = 'common\models\Policy';
 	
-	class PolicyController extends ActiveController
+	/**
+     * {@inheritdoc}
+     */
+	 /*
+	public function behaviors()
 	{
-		
-		public $modelClass = 'common\models\Policy';
-		
-		/**
-		 * @inheritdoc
-		*/
-		protected function verbs()
-		{
-			return [
-				'index' => ['GET', 'HEAD', 'POST'],
-				'view' => ['GET', 'HEAD'],
-				'create' => ['POST'],
-				'update' => ['PUT', 'PATCH'],
-				'delete' => ['DELETE'],
-			];
-		}
-		public function actionIndex() {
-				
-				$return = ['code' => 111, 'data' => 12342423];
-				echo json_encode($return);
-				
-			}
-		}
+		return [
+			'verbs' => [
+				'class' => VerbFilter::className(),
+				'actions' => [
+					'index' => ['get'],
+					'view' => ['get']
+				]
+			]
+		];
+	}
+	*/
+	protected function verbs()
+	{
+		return [
+			'index' => ['get'],
+			'view' => ['get']
+		];
+	}
+	
+	/**
+     * {@inhe
+     */
+	public function actionIndex()
+	{
+		return new ActiveDataProvider([
+			'query' => Policy::find(),
+			]);
+	}
+	
+	public function actionView($id)
+	{
+		return new ActiveDataProvider([
+			'query' => Policy::find($id),
+		]);
+	}
+}
