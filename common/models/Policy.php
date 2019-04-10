@@ -105,4 +105,49 @@ class Policy extends \yii\db\ActiveRecord
     {
         return new PolicyQuery(get_called_class());
     }
+
+    /**
+     * {@inheritdoc}
+     * @return the list of fields 
+     */
+    public function fields()
+    {
+        $fields = parent::fields();
+       
+        return [
+            'policy_id',
+            'title',
+            'thumb', 
+            'support_way' => function() {
+                $support_way = ['给钱', '给人', '给地'];
+                if (key_exists($this->support_way, $support_way)) {
+                    return $support_way[$this->support_way]; 
+                }
+                return '暂无';
+            }, 
+            'open_time'
+        ];
+    }
+
+    public function extraFields() {
+        return [
+            'type_id',
+            'end_time',
+            'charge_depart',
+            'industry',
+            'scale',
+            'age',
+            'brief',
+            'requirement',
+            'support_content',
+            'material',
+            'original_info',
+            'manual',
+            'rank',
+            'status',
+            'is_recommend',
+            'create_time',
+            'update_time'
+        ];
+    }
 }

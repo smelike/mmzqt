@@ -11,47 +11,60 @@ use yii\filters\VerbFilter;
 class PolicyController extends Controller
 {
 	
-	public $modelClass = 'common\models\Policy';
+	// start the cross-site-?-?-attack-validate
+	public $enableCsrfValidation = true;
+	
 	
 	/**
      * {@inheritdoc}
      */
-	 /*
-	public function behaviors()
-	{
-		return [
-			'verbs' => [
-				'class' => VerbFilter::className(),
-				'actions' => [
-					'index' => ['get'],
-					'view' => ['get']
-				]
-			]
-		];
-	}
-	*/
 	protected function verbs()
 	{
 		return [
 			'index' => ['get'],
-			'view' => ['get']
+			'view' => ['get'],
+			'recommend' => ['get']
 		];
 	}
 	
 	/**
-     * {@inhe
+     * query all the policy
      */
 	public function actionIndex()
-	{
+	{	
 		return new ActiveDataProvider([
-			'query' => Policy::find(),
-			]);
+			'query' => Policy::find()
+		]);
 	}
 	
+	/**
+     * query a policy by the primary key $id.
+	 * primary key's field name is policy_id.
+     */
 	public function actionView($id)
 	{
 		return new ActiveDataProvider([
-			'query' => Policy::find($id),
+			'query' => Policy::find()->where(['policy_id' => $id]),
+		]);
+		/*
+		$policy = Policy::findOne($id);
+		return $this->serializeData($policy);
+		*/
+	}
+	
+	/**
+     * query  the policy is recommand by the condition "is_recommend equals 1".
+	 * is_recommend equals 1 
+     */
+	public function actionRecommend()
+	{
+		/*
+		$recommend_policies = Policy::findAll(['is_recommend' => 1]);
+		return $this->serializeData($recommend_policies);
+		*/
+		return new ActiveDataProvider([
+			'query' => Policy::find()->where(['is_recommend' => 1])->orderBy('policy_id desc')->limit(2),
 		]);
 	}
+	
 }
