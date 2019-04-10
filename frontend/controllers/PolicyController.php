@@ -62,9 +62,14 @@ class PolicyController extends Controller
 		$recommend_policies = Policy::findAll(['is_recommend' => 1]);
 		return $this->serializeData($recommend_policies);
 		*/
+		
+		/*
 		return new ActiveDataProvider([
-			'query' => Policy::find()->where(['is_recommend' => 1])->orderBy('policy_id desc'),
-		]);
+			'query' => Policy::find()->where(['is_recommend' => 1])->orderBy('policy_id desc')->limit(0,3),
+		]);*/
+		
+		$recommended_policies = Policy::find()->where(['is_recommend' => 1])->limit(4)->all();
+		return $this->serializeData($recommended_policies);
 	}
 	
 }
