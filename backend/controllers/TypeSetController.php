@@ -8,6 +8,7 @@ use common\models\TypeSetSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
 
 /**
  * TypeSetController implements the CRUD actions for TypeSet model.
@@ -20,6 +21,16 @@ class TypeSetController extends Controller
     public function behaviors()
     {
         return [
+            'access' => [
+                'class' => AccessControl::className(),
+                'rules' => [
+					[
+						'actions' => ['index', 'create', 'view', 'update', 'delete'],
+						'allow' => true,
+						'roles' => ['@']
+					]
+				]
+            ],
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [

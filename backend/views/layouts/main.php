@@ -36,7 +36,9 @@ AppAsset::register($this);
         ],
     ]);
     $menuItems = [
-        ['label' => '首页', 'url' => ['/site/index']],
+        //['label' => '首页', 'url' => ['/site/index']],
+        ['label' => '政策管理', 'url' => ['/policy/index']],
+        ['label' => '类型管理', 'url' => ['/type-set/index']],
     ];
     if (Yii::$app->user->isGuest) {
         $menuItems[] = ['label' => '登录', 'url' => ['/site/login']];
