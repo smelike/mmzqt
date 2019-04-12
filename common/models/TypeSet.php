@@ -30,8 +30,11 @@ class TypeSet extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['status', 'create_time', 'update_time'], 'integer'],
+            ['name', 'required', 'message' => '类型名称不能为空'],
+            ['alias', 'required', 'message' => '类型别名不能为空'],
             [['name', 'alias'], 'string', 'max' => 32],
+            [['status', 'create_time', 'update_time'], 'integer'],
+            [['create_time', 'update_time'], 'default', 'value' => time()]
         ];
     }
 

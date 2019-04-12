@@ -2,6 +2,8 @@
 
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
+use yii\bootstrap\Alert;
+use yii\bootstrap\Modal;
 
 /* @var $this yii\web\View */
 /* @var $model common\models\Policy */
@@ -12,7 +14,10 @@ use yii\widgets\ActiveForm;
 
     <?php $form = ActiveForm::begin(); ?>
 
-    <?= $form->field($model, 'type_id')->textInput() ?>
+    <?= $form->field($model, 'type_id')->dropdownList([
+        1 => 'item1',
+        2 => 'item2'
+    ],['prompt' => '请选择政策类型']) ?>
 
     <?= $form->field($model, 'thumb')->textInput(['maxlength' => true]) ?>
 
@@ -59,5 +64,23 @@ use yii\widgets\ActiveForm;
     </div>
 
     <?php ActiveForm::end(); ?>
+    <?php
+    echo Alert::widget([
+        'options' => [
+            'class' => 'alert-info',
+        ],
+        'body' => 'Say hello...',
+    ]);
+    ?>
 
+<?php
+Modal::begin([
+    'header' => '<h2>选择类型</h2>',
+    'toggleButton' => ['label' => 'click me'],
+]);
+
+echo 'Say hello...';
+
+Modal::end();
+?>
 </div>
