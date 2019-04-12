@@ -8,6 +8,7 @@ use yii\helpers\Html;
 use yii\bootstrap\Nav;
 use yii\bootstrap\NavBar;
 use yii\widgets\Breadcrumbs;
+use yii\widgets\Menu;
 use common\widgets\Alert;
 
 AppAsset::register($this);
@@ -36,9 +37,7 @@ AppAsset::register($this);
         ],
     ]);
     $menuItems = [
-        //['label' => '首页', 'url' => ['/site/index']],
-        ['label' => '政策管理', 'url' => ['/policy/index']],
-        ['label' => '类型管理', 'url' => ['/type-set/index']],
+        ['label' => '首页', 'url' => ['/site/index']]
     ];
     if (Yii::$app->user->isGuest) {
         $menuItems[] = ['label' => '登录', 'url' => ['/site/login']];
@@ -59,12 +58,34 @@ AppAsset::register($this);
     NavBar::end();
     ?>
 
-    <div class="container">
-        <?= Breadcrumbs::widget([
-            'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
-        ]) ?>
-        <?= Alert::widget() ?>
-        <?= $content ?>
+    <div>
+        <div class="row">
+            <div class="col-xs-2" style="margin-top: 60px;">
+                <?php
+                    echo Menu::widget([
+                        'items' => [
+                            // Important: you need to specify url as 'controller/action',
+                            // not just as 'controller' even if default action is used.
+                            // 'Products' menu item will be selected as long as the route is 'product/index'
+                            ['label' => '政策管理', 'url' => ['policy/index'], 'items' => [
+                                ['label' => 'New Arrivals', 'url' => ['product/index', 'tag' => 'new']],
+                                ['label' => 'Most Popular', 'url' => ['product/index', 'tag' => 'popular']],
+                            ]],
+                            ['label' => '类型管理', 'url' => ['type-set/index']],
+                            ['label' => 'Login', 'url' => ['site/login'], 'visible' => Yii::$app->user->isGuest],
+                        ],
+                    ]);
+                ?>
+            </div>
+            
+            <div class="col-8  col-xs-8" style="border-left: 1px solid #6c6c6c;margin-top: 60px;">
+                <?= Breadcrumbs::widget([
+                    'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
+                ]) ?>
+                <?= Alert::widget() ?>
+                <?= $content ?>
+            </div>
+        </div>
     </div>
 </div>
 
