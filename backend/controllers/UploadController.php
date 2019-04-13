@@ -12,7 +12,7 @@ class UploadController extends Controller
 	
 	public static function allowedDomains() {
 		return [
-			//'*',                        // star allows all domains
+			//'*',                     // star allows all domains
 			'http://localhost:8080',
 			//'http://test2.example.com',
 		];
@@ -40,21 +40,17 @@ class UploadController extends Controller
 	}
     public function actionIndex()
     {
-		$model = new UploadForm();
-	
-		$request = Yii::$app->request;
-		//var_dump($request);
         if (Yii::$app->request->isPost) {
-            $model->imageFile = UploadedFile::getInstance($model, 'imageFile');
+			$model = new UploadForm();
+            $model->imageFile = UploadedFile::getInstanceByName('imageFile');
 			//var_dump($model->imageFile);
             if ($model->upload()) {
                 // file is uploaded successfully
-				$response = ['code' => 1000, 'imgUrl' => $model->imageFile->name];
+				$response = ['code' => 0, 'imgUrl' => $model->imageFile->name];
                 return $this->serializeData($response);
             }
         }
-		
-        return $this->render('index', ['model' => $model]);
+        //return $this->render('index', ['model' => $model]);
     }
 	
 	
