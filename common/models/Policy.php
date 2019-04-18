@@ -52,6 +52,7 @@ class Policy extends \yii\db\ActiveRecord
             [['title', 'open_time', 'end_time'], 'required'],
             [['open_time', 'end_time'], 'string'],
             [['create_time', 'update_time'], 'default', 'value' => time()],
+			[['status'], 'default', 0],
             [['requirement', 'support_content', 'material', 'original_info', 'manual'], 'string'],
             ['title', 'string', 'max' => 128],
             ['thumb', 'image', 'extensions' => 'png, jpg, jpeg'],
@@ -128,29 +129,10 @@ class Policy extends \yii\db\ActiveRecord
                 }
                 return '暂无';
             }, 
-            'open_time'
-        ];
-    }
-
-    public function extraFields() {
-        return [
-            'type_id',
-            'end_time',
-            'charge_depart',
-            'industry',
-            'scale',
-            'age',
-            'brief',
-            'requirement',
-            'support_content',
-            'material',
-            'original_info',
-            'manual',
-            'rank',
-            'status',
-            'is_recommend',
-            'create_time',
-            'update_time'
+            'open_time',
+			'create_time' => function() {
+				return date('Y-m-d', $this->create_time);
+			}
         ];
     }
 }

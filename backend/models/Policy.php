@@ -48,7 +48,7 @@ class Policy extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['type_id', 'open_time', 'end_time', 'support_way', 'charge_depart', 'industry', 'scale', 'rank', 'status', 'is_recommend', 'create_time', 'update_time'], 'integer'],
+            [['type_id', 'open_time', 'end_time', 'support_id', 'charge_depart', 'industry', 'scale', 'rank', 'status', 'is_recommend', 'create_time', 'update_time'], 'integer'],
             [['title', 'open_time', 'end_time'], 'required'],
             [['requirement', 'support_content', 'material', 'original_info', 'manual'], 'string'],
             [['thumb', 'title'], 'string', 'max' => 128],

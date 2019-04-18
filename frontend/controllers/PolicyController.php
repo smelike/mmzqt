@@ -2,7 +2,6 @@
 
 namespace frontend\controllers;
 
-//use yii\rest\ActiveController;
 use yii\rest\Controller;
 use yii\data\ActiveDataProvider;
 use common\models\Policy;
@@ -30,10 +29,12 @@ class PolicyController extends Controller
 	/**
      * query all the policy
      */
-	public function actionIndex()
+	public function actionIndex(int $page)
 	{	
+		$page = $page;
 		return new ActiveDataProvider([
-			'query' => Policy::find()
+			'query' => Policy::find()->where(['status' => 0])->limit(0, 10)
+// where(['is_recommend' => 1])->orderBy('policy_id desc')->limit(4)->all()
 		]);
 	}
 	

@@ -12,9 +12,8 @@ class UploadController extends Controller
 	
 	public static function allowedDomains() {
 		return [
-			//'*',                     // star allows all domains
-			'http://localhost:8080',
-			//'http://test2.example.com',
+			//'*',
+			'http://localhost:8080'
 		];
 	}
 	
@@ -24,16 +23,13 @@ class UploadController extends Controller
 	public function behaviors() {
 		
 		return array_merge(parent::behaviors(), [
-
-			//For cross-domain AJAX request
 			'corsFilter'  => [
 				'class' => \yii\filters\Cors::className(),
 				'cors'  => [
-					// restrict access to domains:
 					'Origin'                           => static::allowedDomains(),
 					'Access-Control-Request-Method'    => ['POST', 'OPTIONS'],
 					'Access-Control-Allow-Credentials' => false,
-					'Access-Control-Max-Age'           => 3600,                 // Cache (seconds)
+					'Access-Control-Max-Age'           => 3600,
 				],
 			],
 		]);
