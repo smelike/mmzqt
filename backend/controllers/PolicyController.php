@@ -47,24 +47,13 @@ class PolicyController extends Controller
      * Lists all Policy models.
      * @return mixed
      */
-    public function actionIndex()
+    public function actionIndex(int $page = 1, int $offset = 10)
     {
-        /*
-		$searchModel = new PolicySearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
-		
-		$this->serializeData($dataProvider);
-		
-        return $this->render('index', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
-        ]);
-		*/
 		$query = Policy::find()->where(['status' => 0]);
 		$count = $query->count();
 		$pagination = new Pagination(['totalCount' => $count]);
-		// $pagination->limit = 10;
-		$policies = $query->offset($pagination->offset)->limit(10)->all();
+		$start = ($page - 1) * $offset;
+		$policies = $query->offset($start)->limit($offset)->all();
 		return $this->serializeData(['set' => $policies, 'count' => $count]);
     }
 

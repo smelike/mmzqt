@@ -46,6 +46,7 @@ return [
             'showScriptName' => false,
             'rules' => [
 				'type-set/<alias:\w+>' => 'type-set/index',
+				'policy/<page:\d+>/<offset:\d+>' => 'policy/index'
 				#'type-set' => 'type-set/index'
             ],
         ],
