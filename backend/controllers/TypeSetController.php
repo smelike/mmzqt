@@ -5,54 +5,54 @@ namespace backend\controllers;
 use Yii;
 use common\models\TypeSet;
 use common\models\TypeSetSearch;
-use yii\web\Controller;
+use yii\rest\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
+use yii\data\Pagination;
 
 /**
  * TypeSetController implements the CRUD actions for TypeSet model.
  */
 class TypeSetController extends Controller
 {
+	public $enableCsrfValidation = false;
+	
+	public static function allowedDomains() {
+		return [
+			'http://localhost:8080',
+		];
+	}
     /**
      * {@inheritdoc}
      */
     public function behaviors()
     {
-        return [
-            'access' => [
-                'class' => AccessControl::className(),
-                'rules' => [
-					[
-						'actions' => ['index', 'create', 'view', 'update', 'delete'],
-						'allow' => true,
-						'roles' => ['@']
-					]
-				]
-            ],
-            'verbs' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-                    'delete' => ['POST'],
-                ],
-            ],
-        ];
+		return array_merge(parent::behaviors(), [
+			'corsFilter'  => [
+				'class' => \yii\filters\Cors::className(),
+				'cors'  => [
+					'Origin'                           => static::allowedDomains(),
+					'Access-Control-Request-Method'    => ['POST', 'OPTIONS'],
+					'Access-Control-Allow-Credentials' => true,
+					'Access-Control-Max-Age'           => 3600
+				],
+			],
+		]);
     }
 
     /**
      * Lists all TypeSet models.
      * @return mixed
      */
-    public function actionIndex()
+    public function actionIndex(string $alias = '')
     {
-        $searchModel = new TypeSetSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
-
-        return $this->render('index', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
-        ]);
+		if (empty($alias)) {exit(false);}
+		$query = TypeSet::find()->where(['status' => 0, 'alias' => $alias]);
+		$count = $query->count();
+		$pagination = new Pagination(['totalCount' => $count]);
+		$typeSet = $query->offset($pagination->offset)->limit(10)->all();
+		return $this->serializeData(['set' => $typeSet, 'count' => $count]);
     }
 
     /**

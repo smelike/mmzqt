@@ -110,7 +110,6 @@ class PolicyController extends Controller
 		$model->requirement = $post['requirement'];
 		$model->original_info = $post['content'];
 		$model->insert();
-		//var_dump($model->policy_id);
 		
         if ($model->policy_id) {
 			return $this->serializeData(['code' => 0, 'policy_id' => $model->policy_id]);

@@ -41,14 +41,14 @@ return [
         'errorHandler' => [
             'errorAction' => 'site/error',
         ],
-        /*
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+				'type-set/<alias:\w+>' => 'type-set/index',
+				#'type-set' => 'type-set/index'
             ],
         ],
-        */
     ],
     'params' => $params,
 ];
