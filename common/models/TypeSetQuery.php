@@ -9,11 +9,13 @@ namespace common\models;
  */
 class TypeSetQuery extends \yii\db\ActiveQuery
 {
+	
+	public $name;
     /*public function active()
     {
         return $this->andWhere('[[status]]=1');
     }*/
-
+	
     /**
      * {@inheritdoc}
      * @return TypeSet[]|array

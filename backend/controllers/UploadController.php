@@ -36,17 +36,17 @@ class UploadController extends Controller
 	}
     public function actionIndex()
     {
+		$response = ['code' => 9, 'msg' => '上传内容不能为空'];
         if (Yii::$app->request->isPost) {
 			$model = new UploadForm();
             $model->imageFile = UploadedFile::getInstanceByName('imageFile');
-			//var_dump($model->imageFile);
             if ($model->upload()) {
                 // file is uploaded successfully
 				$response = ['code' => 0, 'imgUrl' => $model->imageFile->name];
-                return $this->serializeData($response);
             }
+			$response = ['code' => 1, 'msg' => '只允许 png,jpg 图片类型'];
         }
-        //return $this->render('index', ['model' => $model]);
+		return $this->serializeData($response);
     }
 	
 	

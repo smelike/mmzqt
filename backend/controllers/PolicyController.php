@@ -4,13 +4,14 @@ namespace backend\controllers;
 
 use Yii;
 use common\models\Policy;
-use common\models\PolicySearch;
+#use common\models\PolicySearch;
 use yii\rest\Controller;
 use yii\data\ActiveDataProvider;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\data\Pagination;
+use yii\web\Response;
 
 /**
  * PolicyController implements the CRUD actions for Policy model.
@@ -45,6 +46,8 @@ class PolicyController extends Controller
 
     /**
      * Lists all Policy models.
+	 * @param integer $page 
+	 * @param integer $offset
      * @return mixed
      */
     public function actionIndex(int $page = 1, int $offset = 10)
@@ -63,11 +66,13 @@ class PolicyController extends Controller
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionView($id)
+    public function actionView(int $id)
     {
-        return $this->render('view', [
-            'model' => $this->findModel($id),
-        ]);
+        
+        $policy = $this->findModel($id);
+		
+		return $this->serializeData($policy);
+       
     }
 
     /**
@@ -78,9 +83,6 @@ class PolicyController extends Controller
     public function actionCreate()
     {
 		$post = Yii::$app->request->post();
-		
-		$data = [];
-		
 		
         $model = new Policy;
 		
@@ -115,14 +117,10 @@ class PolicyController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-
+	
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->policy_id]);
+            return $this->serializeData(['code' => 0, 'policy_id' => $model->policy_id]);
         }
-
-        return $this->render('update', [
-            'model' => $model,
-        ]);
     }
 
     /**
@@ -134,9 +132,9 @@ class PolicyController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
-
-        return $this->redirect(['index']);
+        $model = $this->findModel(['policy_id' => $id]);
+		$update = $model->updateAttributes(['status' => 2, 'update_time' => time()]);
+        return $this->serializeData(['code' => $update, 'policy_id' => $id]);
     }
 
     /**
