@@ -32,9 +32,10 @@ class TypeSet extends \yii\db\ActiveRecord
         return [
             ['name', 'required', 'message' => '类型名称不能为空'],
             ['alias', 'required', 'message' => '类型别名不能为空'],
-            [['name', 'alias'], 'string', 'max' => 32],
+            [['name', 'alias'], 'string', 'max' => 32, 'message' => '长度不能超过 32'],
             [['status', 'create_time', 'update_time'], 'integer'],
-            [['create_time', 'update_time'], 'default', 'value' => time()]
+            [['create_time', 'update_time'], 'default', 'value' => time()],
+			[['status'], 'default', 'value' => 0]
         ];
     }
 

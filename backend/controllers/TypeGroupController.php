@@ -3,60 +3,47 @@
 namespace backend\controllers;
 
 use Yii;
-use common\models\TypeSet;
-use common\models\TypeSetSearch;
-use yii\rest\Controller;
+use common\controllers\RestController;
+use common\models\TypeGroup;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-use yii\filters\AccessControl;
 use yii\data\Pagination;
 
 /**
- * TypeSetController implements the CRUD actions for TypeSet model.
+ * TypeGroupController implements the CRUD actions for TypeGroup model.
  */
-class TypeSetController extends Controller
+class TypeGroupController extends RestController
 {
-	public $enableCsrfValidation = false;
-	
-	public static function allowedDomains() {
-		return [
-			'http://localhost:8080',
-		];
-	}
     /**
      * {@inheritdoc}
      */
     public function behaviors()
     {
-		return array_merge(parent::behaviors(), [
-			'corsFilter'  => [
-				'class' => \yii\filters\Cors::className(),
-				'cors'  => [
-					'Origin'                           => static::allowedDomains(),
-					'Access-Control-Request-Method'    => ['POST', 'OPTIONS'],
-					'Access-Control-Allow-Credentials' => true,
-					'Access-Control-Max-Age'           => 3600
-				],
-			],
-		]);
+        return array_merge(parent::behaviors(), [
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'delete' => ['POST'],
+                ],
+            ],
+        ]);
     }
 
     /**
-     * Lists all TypeSet models.
+     * Lists all TypeGroup models.
      * @return mixed
      */
-    public function actionIndex(string $alias = '')
+    public function actionIndex()
     {
-		if (empty($alias)) {exit(false);}
-		$query = TypeSet::find()->where(['status' => 0, 'alias' => $alias]);
+		$query = TypeGroup::find();
 		$count = $query->count();
 		$pagination = new Pagination(['totalCount' => $count]);
-		$typeSet = $query->offset($pagination->offset)->limit(10)->all();
-		return $this->serializeData(['set' => $typeSet, 'count' => $count]);
+		$typeGroup = $query->offset($pagination->offset)->limit(10)->all();
+		return $this->serializeData(['set' => $typeGroup, 'count' => $count]);
     }
 
     /**
-     * Displays a single TypeSet model.
+     * Displays a single TypeGroup model.
      * @param integer $id
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
@@ -69,23 +56,26 @@ class TypeSetController extends Controller
     }
 
     /**
-     * Creates a new TypeSet model.
+     * Creates a new TypeGroup model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
     public function actionCreate()
     {
-        $model = new TypeSet();
-		
-		$response = ['code' => 0, 'id' => '', 'msg' => '创建类型失败'];
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            $response = ['code' => 0 , 'id' => $model->type_id];
+        $model = new TypeGroup();
+		$response = ['code' => 1, 'msg' => '填写内容不能为空'];
+		$post = Yii::$app->request->post();
+		$model->alias = isset($post['alias']) ? $post['alias'] : '';
+		$model->group_name = isset($post['group_name']) ? $post['group_name'] : '';
+        if ($post && $model->save()) {
+            $response = ['code' => 0, 'id' => $model->tg_id];
         }
-		return $this->serializeData($response);
+
+        return $this->serializeData($response);
     }
 
     /**
-     * Updates an existing TypeSet model.
+     * Updates an existing TypeGroup model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
      * @return mixed
@@ -96,7 +86,7 @@ class TypeSetController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->type_id]);
+            return $this->redirect(['view', 'id' => $model->tg_id]);
         }
 
         return $this->render('update', [
@@ -105,7 +95,7 @@ class TypeSetController extends Controller
     }
 
     /**
-     * Deletes an existing TypeSet model.
+     * Deletes an existing TypeGroup model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id
      * @return mixed
@@ -119,15 +109,15 @@ class TypeSetController extends Controller
     }
 
     /**
-     * Finds the TypeSet model based on its primary key value.
+     * Finds the TypeGroup model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param integer $id
-     * @return TypeSet the loaded model
+     * @return TypeGroup the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = TypeSet::findOne($id)) !== null) {
+        if (($model = TypeGroup::findOne($id)) !== null) {
             return $model;
         }
 

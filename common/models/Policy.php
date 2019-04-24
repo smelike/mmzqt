@@ -3,6 +3,7 @@
 namespace common\models;
 
 use Yii;
+use common\models\TypeSet;
 
 /**
  * This is the model class for table "policy".
@@ -109,33 +110,27 @@ class Policy extends \yii\db\ActiveRecord
     {
         return new PolicyQuery(get_called_class());
     }
-
+	
     /**
      * {@inheritdoc}
      * @return the list of fields 
      */
     public function fields()
-    {
-        //$fields = parent::fields();
-       
+    {   
         return [
             'policy_id',
             'title',
             'thumb', 
             'support_way' => function() {
-                $support_way = ['给钱', '给人', '给地'];
-                if (key_exists($this->support_way, $support_way)) {
-                    return $support_way[$this->support_way]; 
-                }
-                return '暂无';
+				$typeSet = TypeSet::findOne($this->support_way);
+				return $typeSet ? $typeSet->name : '-';
             }, 
             'open_time' => function() {
 				return date('Y-m-d', $this->open_time);
 			},
 			'create_time' => function() {
 				return date('Y-m-d', $this->create_time);
-			},
-			'status'
+			}
         ];
     }
 }
