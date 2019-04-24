@@ -99,11 +99,11 @@ class TypeSetController extends Controller
 
 		$post = Yii::$app->request->post();
 		$model->name = isset($post['name']) ? $post['name'] : '';
-		$model->alias = isset($post['alias']) ? $post['alias'] : '';
+		//$model->alias = isset($post['alias']) ? $post['alias'] : '';
 		$model->update_time = time();
 		
 		$response = ['code' => 0, 'id' => '', 'msg' => '类型更新失败'];
-        if ($model->name && $model->alias && $model->save()) {
+        if ($model->name && $model->save()) {
             $response = ['code' => 0 , 'id' => $model->type_id, 'msg' => '类型更新成功'];
         }
 		return $this->serializeData($response);
