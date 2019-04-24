@@ -79,8 +79,8 @@ class TypeGroupController extends Controller
 		$post = Yii::$app->request->post();
 		$model->alias = isset($post['alias']) ? $post['alias'] : '';
 		$model->group_name = isset($post['group_name']) ? $post['group_name'] : '';
-        if ($post && $model->save()) {
-            $response = ['code' => 0, 'id' => $model->tg_id];
+        if ($model->alias && $model->group_name && $model->save()) {
+            $response = ['code' => 0, 'id' => $model->tg_id, 'msg' => '类型分组创建成功'];
         }
 
         return $this->serializeData($response);
