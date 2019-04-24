@@ -48,7 +48,7 @@ class TypeSetController extends Controller
     public function actionIndex(string $alias = '')
     {
 		if (empty($alias)) {exit(false);}
-		$query = TypeSet::find()->where(['status' => 0, 'alias' => $alias]);
+		$query = TypeSet::find()->where(['status' => 0, 'alias' => $alias])->orderBy(['type_id' => SORT_DESC]);
 		$count = $query->count();
 		$pagination = new Pagination(['totalCount' => $count]);
 		$typeSet = $query->offset($pagination->offset)->limit(10)->all();
@@ -61,11 +61,10 @@ class TypeSetController extends Controller
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionView($id)
+    public function actionView(int $id)
     {
-        return $this->render('view', [
-            'model' => $this->findModel($id),
-        ]);
+        $typeSet = $this->findModel($id);
+		return $this->serializeData($typeSet);
     }
 
     /**
@@ -77,9 +76,12 @@ class TypeSetController extends Controller
     {
         $model = new TypeSet();
 		
-		$response = ['code' => 0, 'id' => '', 'msg' => '创建类型失败'];
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            $response = ['code' => 0 , 'id' => $model->type_id];
+		$response = ['code' => 1, 'id' => '', 'msg' => '类型创建失败，刷新尝试'];
+		$post = Yii::$app->request->post();
+		$model->name = isset($post['name']) ? $post['name'] : '';
+		$model->alias = isset($post['alias']) ? $post['alias'] : '';
+        if ($model->name && $model->alias && $model->save()) {
+            $response = ['code' => 0 , 'id' => $model->type_id, 'msg' => '类型创建成功'];
         }
 		return $this->serializeData($response);
     }
@@ -95,13 +97,16 @@ class TypeSetController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->type_id]);
+		$post = Yii::$app->request->post();
+		$model->name = isset($post['name']) ? $post['name'] : '';
+		$model->alias = isset($post['alias']) ? $post['alias'] : '';
+		$model->update_time = time();
+		
+		$response = ['code' => 0, 'id' => '', 'msg' => '类型更新失败'];
+        if ($model->name && $model->alias && $model->save()) {
+            $response = ['code' => 0 , 'id' => $model->type_id, 'msg' => '类型更新成功'];
         }
-
-        return $this->render('update', [
-            'model' => $model,
-        ]);
+		return $this->serializeData($response);
     }
 
     /**
@@ -113,9 +118,15 @@ class TypeSetController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
-
-        return $this->redirect(['index']);
+        $model = $this->findModel($id);
+		$update = $model->updateAttributes(['status' => 1, 'update_time' => time()]);
+		
+		$response = ['code' => 1, 'msg' => '删除失败'];
+		if ($update) {
+			$response['msg'] = '删除成功';
+			$response['code'] = 0;
+		}
+        return $this->serializeData($response);
     }
 
     /**

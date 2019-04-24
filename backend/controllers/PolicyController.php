@@ -48,7 +48,7 @@ class PolicyController extends Controller
      */
     public function actionIndex(int $page = 1, int $offset = 10)
     {
-		$query = Policy::find()->where(['status' => 0]);
+		$query = Policy::find()->where(['status' => 0])->orderBy(['policy_id' => SORT_DESC]);
 		$count = $query->count();
 		$pagination = new Pagination(['totalCount' => $count]);
 		$start = ($page - 1) * $offset;
@@ -62,7 +62,7 @@ class PolicyController extends Controller
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionView(int $id)
+    public function actionView($id)
     {
         
         $policy = $this->findModel($id);
@@ -130,7 +130,7 @@ class PolicyController extends Controller
     {
         $model = $this->findModel(['policy_id' => $id]);
 		$update = $model->updateAttributes(['status' => 2, 'update_time' => time()]);
-        return $this->serializeData(['code' => $update, 'policy_id' => $id]);
+        return $this->serializeData(['code' => (int)!$update, 'policy_id' => $id]);
     }
 
     /**

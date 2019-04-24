@@ -29,6 +29,7 @@ class TypeGroup extends \yii\db\ActiveRecord
         return [
             [['alias'], 'string', 'max' => 64],
             [['group_name'], 'string', 'max' => 128],
+			[['status'], 'default', 'value' => 0]
         ];
     }
 
@@ -41,6 +42,7 @@ class TypeGroup extends \yii\db\ActiveRecord
             'tg_id' => Yii::t('app', '主键ID'),
             'alias' => Yii::t('app', '分组英文别名'),
             'group_name' => Yii::t('app', '分组中文名'),
+            'status' => Yii::t('app', '状态'),
         ];
     }
 

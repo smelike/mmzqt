@@ -45,7 +45,7 @@ class TypeGroupController extends Controller
      */
     public function actionIndex(int $page = 1, int $offset = 10)
     {
-		$query = TypeGroup::find();
+		$query = TypeGroup::find()->orderBy(['tg_id' => SORT_DESC]);
 		$count = $query->count();
 		$pagination = new Pagination(['totalCount' => $count]);
 		$start = ($page - 1) * $offset;
@@ -62,9 +62,8 @@ class TypeGroupController extends Controller
      */
     public function actionView($id)
     {
-        return $this->render('view', [
-            'model' => $this->findModel($id),
-        ]);
+        $typeGroup = $this->findModel($id);
+		return $this->serializeData($typeGroup);  
     }
 
     /**
@@ -77,12 +76,12 @@ class TypeGroupController extends Controller
         $model = new TypeGroup();
 		$response = ['code' => 1, 'msg' => '填写内容不能为空'];
 		$post = Yii::$app->request->post();
+
 		$model->alias = isset($post['alias']) ? $post['alias'] : '';
 		$model->group_name = isset($post['group_name']) ? $post['group_name'] : '';
         if ($model->alias && $model->group_name && $model->save()) {
             $response = ['code' => 0, 'id' => $model->tg_id, 'msg' => '类型分组创建成功'];
         }
-
         return $this->serializeData($response);
     }
 
@@ -95,15 +94,21 @@ class TypeGroupController extends Controller
      */
     public function actionUpdate($id)
     {
-        $model = $this->findModel($id);
-
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->tg_id]);
-        }
-
-        return $this->render('update', [
-            'model' => $model,
-        ]);
+		$model = $this->findModel($id);
+		$post = Yii::$app->request->post();
+		$post = array_filter($post);
+		
+		$response = ['code' => 1, 'msg' => '更新内容不能为空'];
+		if (isset($post['alias'], $post['group_name'])) {
+			$updateData = ['alias' => $post['alias'], 'group_name' => $post['group_name']];
+			$updateData = array_filter($updateData);
+			$response = ['code' => 1, 'msg' => '更新内容失败'];
+			if (!empty($updateData)) {
+				$update = $model->updateAttributes(array_merge($updateData, array('update_time' => time())));
+			}
+		}
+		
+		return $this->serializeData($response);
     }
 
     /**
@@ -115,9 +120,9 @@ class TypeGroupController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
-
-        return $this->redirect(['index']);
+        $model = $this->findModel($id);
+		$update = $model->updateAttributes(['status' => 1, 'update_time' => time()]);
+        return $this->serializeData(['code' => !$update, 'policy_id' => $id]);
     }
 
     /**

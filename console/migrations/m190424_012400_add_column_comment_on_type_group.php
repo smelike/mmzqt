@@ -16,6 +16,7 @@ class m190424_012400_add_column_comment_on_type_group extends Migration
 		$this->addCommentOnColumn($tableName, 'tg_id', '主键ID');
 		$this->addCommentOnColumn($tableName, 'alias', '分组英文别名');
 		$this->addCommentOnColumn($tableName, 'group_name', '分组中文名');
+		$this->addCommentOnColumn($tableName, 'status', '状态');
     }
 
     /**
