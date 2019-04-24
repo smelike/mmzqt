@@ -3,7 +3,7 @@
 namespace backend\controllers;
 
 use Yii;
-use common\controllers\RestController;
+use yii\rest\Controller;
 use common\models\TypeGroup;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -12,33 +12,45 @@ use yii\data\Pagination;
 /**
  * TypeGroupController implements the CRUD actions for TypeGroup model.
  */
-class TypeGroupController extends RestController
+class TypeGroupController extends Controller
 {
+   public $enableCsrfValidation = false;
+	
+	public static function allowedDomains() {
+		return [
+			'http://localhost:8080',
+		];
+	}
     /**
      * {@inheritdoc}
      */
     public function behaviors()
     {
-        return array_merge(parent::behaviors(), [
-            'verbs' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-                    'delete' => ['POST'],
-                ],
-            ],
-        ]);
+		return array_merge(parent::behaviors(), [
+			'corsFilter'  => [
+				'class' => \yii\filters\Cors::className(),
+				'cors'  => [
+					'Origin'                           => static::allowedDomains(),
+					'Access-Control-Request-Method'    => ['POST', 'OPTIONS'],
+					'Access-Control-Allow-Credentials' => true,
+					'Access-Control-Max-Age'           => 3600
+				],
+			],
+		]);
     }
 
     /**
      * Lists all TypeGroup models.
      * @return mixed
      */
-    public function actionIndex()
+    public function actionIndex(int $page = 1, int $offset = 10)
     {
 		$query = TypeGroup::find();
 		$count = $query->count();
 		$pagination = new Pagination(['totalCount' => $count]);
-		$typeGroup = $query->offset($pagination->offset)->limit(10)->all();
+		$start = ($page - 1) * $offset;
+		$offset = ($offset > 0) ? $offset : 10;
+		$typeGroup = $query->offset($start)->limit($offset)->all();
 		return $this->serializeData(['set' => $typeGroup, 'count' => $count]);
     }
 

@@ -4,15 +4,11 @@ namespace backend\controllers;
 
 use Yii;
 use common\models\Policy;
-#use common\models\PolicySearch;
 use yii\rest\Controller;
-use yii\data\ActiveDataProvider;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\data\Pagination;
-use yii\web\Response;
-
 /**
  * PolicyController implements the CRUD actions for Policy model.
  */

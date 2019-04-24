@@ -49,7 +49,8 @@ return [
 				'type-set/<alias:\w+>' => 'type-set/index',
 				'policy/<page:\d+>/<offset:\d+>' => 'policy/index',
 				'policy/view/<id:\d+>' => 'policy/view',
-				'policy/delete/<id:\d+>' => 'policy/delete'
+				'policy/delete/<id:\d+>' => 'policy/delete',
+				'type-group/<page:\d+>/<offset:\d+>' => 'type-group/index',
             ],
         ],
     ],
