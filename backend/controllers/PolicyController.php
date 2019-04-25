@@ -130,7 +130,8 @@ class PolicyController extends Controller
     {
         $model = $this->findModel(['policy_id' => $id]);
 		$update = $model->updateAttributes(['status' => 2, 'update_time' => time()]);
-        return $this->serializeData(['code' => (int)!$update, 'policy_id' => $id]);
+		$msg = $update ? '删除成功' : '删除失败，稍后尝试';
+        return $this->serializeData(['code' => (int)!$update, 'id' => $id, 'msg' => $msg]);
     }
 
     /**
