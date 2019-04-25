@@ -83,30 +83,33 @@ class PolicyController extends Controller
         $model = new Policy;
 		
 		$model->title = $post['title'];
-		$model->thumb = $post['thumb'];
-		$dateTime = explode(",", $post['date']);
-		$model->open_time = array_shift($dateTime);
-		$model->end_time = array_pop($dateTime);
-		$model->type_id = $post['typeId'];
-		$model->support_way = $post['supportId'];
-		$model->charge_depart = $post['chargeId'];
-		$model->industry = $post['industryId'];
+		$model->thumb = empty($post['thumb']) ? 'default.png' : $post['thumb'];
+		$model->open_time = strtotime($post['date'][0]);
+		$model->end_time = strtotime($post['date'][1]);;
+		$model->type_id = empty($post['type_id']) ? 0 : $post['type_id'];
+		$model->support_way = $post['support_way'];
+		$model->charge_depart = $post['charge_depart'];
+		$model->industry = $post['industry'];
 		$model->scale = $post['scale'];
 		$model->age = $post['age'];
 		$model->brief = $post['brief'];
 		$model->requirement = $post['requirement'];
+		$model->material = $post['material'];
 		$model->original_info = $post['original_info'];
+		$model->support_content = $post['support_content'];
 		$model->manual = $post['manual'];
 		$model->rank = $post['rank'];
 		
 		$response = ['code' => 1, 'msg' => '不符合规则'];
 		if ($model->validate()) {
-			$model->insert();
-			if ($model->policy_id) {
-				$response = ['code' => 0, 'id' => $model->policy_id, 'msg' => '政策创建成功'];
-			}
+			$insert = $model->insert();
+			$msg = $insert ? '政策创建成功' : '政策创建失败，请稍后尝试';
+			$response = ['code' => (int)!$insert, 'id' => $model->policy_id, 'msg' => $msg];
+		} else {
+			$validateError = $model->getFirstErrors();
+			$validateError = is_array($validateError) ? join(',', $validateError) : '';
+			$response['msg'] = $validateError;
 		}
-		//var_dump($model->getFirstError());
 		return $this->serializeData($response);
     }
 	
