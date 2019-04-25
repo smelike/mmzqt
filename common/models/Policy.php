@@ -126,9 +126,10 @@ class Policy extends \yii\db\ActiveRecord
 			'end_time' => function() {
 				return date('Y-m-d', $this->end_time);
 			},
+			/*
 			'create_time' => function() {
 				return date('Y-m-d', $this->create_time);
-			},
+			},*/
 			'support_way' => function() {
 				$typeSet = TypeSet::findOne($this->support_way);
 				return $typeSet ? $typeSet->name : '-';

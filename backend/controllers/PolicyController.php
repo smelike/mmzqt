@@ -150,7 +150,7 @@ class PolicyController extends Controller
 			$msg = $insert ? '政策更新成功' : '政策更新失败，请稍后尝试';
 			$response = ['code' => (int)!$insert, 'id' => $model->policy_id, 'msg' => $msg];
 		} else {
-			$validateError = $model->getErrors();
+			$validateError = $model->getFirstErrors();
 			$validateError = is_array($validateError) ? join(',', $validateError) : '';
 			$response['msg'] = $validateError;
 		}
