@@ -95,12 +95,19 @@ class PolicyController extends Controller
 		$model->age = $post['age'];
 		$model->brief = $post['brief'];
 		$model->requirement = $post['requirement'];
-		$model->original_info = $post['content'];
-		$model->insert();
+		$model->original_info = $post['original_info'];
+		$model->manual = $post['manual'];
+		$model->rank = $post['rank'];
 		
-        if ($model->policy_id) {
-			return $this->serializeData(['code' => 0, 'policy_id' => $model->policy_id]);
-        }
+		$response = ['code' => 1, 'msg' => '不符合规则'];
+		if ($model->validate()) {
+			$model->insert();
+			if ($model->policy_id) {
+				$response = ['code' => 0, 'id' => $model->policy_id, 'msg' => '政策创建成功'];
+			}
+		}
+		//var_dump($model->getFirstError());
+		return $this->serializeData($response);
     }
 	
     /**
