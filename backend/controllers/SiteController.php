@@ -6,6 +6,7 @@ use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use common\models\LoginForm;
+use common\models\User;
 
 /**
  * Site controller
@@ -70,19 +71,23 @@ class SiteController extends Controller
      */
     public function actionLogin()
     {
+		/*
         if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
+            //return $this->goHome();
         }
-
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
+		*/
+		
+        $post = Yii::$app->request->post();
+		$model = new LoginForm();
+		$model->login_name = $post['login_name'];
+		$model->password = $post['password'];
+        if ($model->login()) {
+				
+			echo Yii::$app->user->getId();
+			$response = ['code' => 0, 'token' => ''];
+            return $this->serializeData($response);
         } else {
             $model->password = '';
-
-            return $this->render('login', [
-                'model' => $model,
-            ]);
         }
     }
 

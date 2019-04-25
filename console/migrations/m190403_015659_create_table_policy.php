@@ -29,7 +29,7 @@ class m190403_015659_create_table_policy extends Migration
 			'charge_depart' => $this->tinyInteger(2)->defaultValue(0),
 			'industry' => $this->tinyInteger(2)->defaultValue(0),
 			'scale' => $this->smallInteger(6),
-			'age' => $this->string(4),
+			'age' => $this->tinyInteger(4),
 			'brief' => $this->string(256),
 			'requirement' => $this->text(),
 			'support_content' => $this->text(),

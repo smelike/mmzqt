@@ -49,14 +49,13 @@ class Policy extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['type_id', 'support_way', 'charge_depart', 'industry', 'scale', 'rank', 'status', 'is_recommend', 'create_time', 'update_time'], 'integer'],
+            [['type_id', 'support_way', 'charge_depart', 'industry', 'age', 'scale', 'rank', 'status', 'is_recommend', 'create_time', 'update_time'], 'integer'],
             [['title', 'open_time', 'end_time'], 'required'],
             [['create_time', 'update_time'], 'default', 'value' => time()],
 			[['status', 'is_recommend'], 'default', 'value' => 0],
             [['requirement', 'support_content', 'material', 'original_info', 'manual'], 'string'],
             ['title', 'string', 'max' => 128],
             ['thumb', 'image', 'extensions' => 'png, jpg, jpeg'],
-            [['age'], 'string', 'max' => 4],
             [['brief'], 'string', 'max' => 256],
             [['title'], 'unique', 'message' => '该标题存在'],
         ];
@@ -119,17 +118,34 @@ class Policy extends \yii\db\ActiveRecord
         return [
             'policy_id',
             'title',
-            'thumb', 
-            'support_way' => function() {
-				$typeSet = TypeSet::findOne($this->support_way);
-				return $typeSet ? $typeSet->name : '-';
-            }, 
+            'thumb',
+			'type_id',
             'open_time' => function() {
 				return date('Y-m-d', $this->open_time);
 			},
+			'end_time' => function() {
+				return date('Y-m-d', $this->end_time);
+			},
 			'create_time' => function() {
 				return date('Y-m-d', $this->create_time);
-			}
+			},
+			'support_way' => function() {
+				$typeSet = TypeSet::findOne($this->support_way);
+				return $typeSet ? $typeSet->name : '-';
+            },
+			'charge_depart',
+			'industry',
+			'scale',
+			'age',
+			'brief',
+			'requirement',
+			'support_content',
+			'material',
+			'original_info',
+			'manual',
+			'rank',
+			'status',
+			'is_recommend'
         ];
     }
 }

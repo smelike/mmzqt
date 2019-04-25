@@ -79,27 +79,8 @@ class PolicyController extends Controller
     public function actionCreate()
     {
 		$post = Yii::$app->request->post();
-		
-        $model = new Policy;
-		
-		$model->title = $post['title'];
-		$model->thumb = empty($post['thumb']) ? 'default.png' : $post['thumb'];
-		$model->open_time = strtotime($post['date'][0]);
-		$model->end_time = strtotime($post['date'][1]);;
-		$model->type_id = empty($post['type_id']) ? 0 : $post['type_id'];
-		$model->support_way = $post['support_way'];
-		$model->charge_depart = $post['charge_depart'];
-		$model->industry = $post['industry'];
-		$model->scale = $post['scale'];
-		$model->age = $post['age'];
-		$model->brief = $post['brief'];
-		$model->requirement = $post['requirement'];
-		$model->material = $post['material'];
-		$model->original_info = $post['original_info'];
-		$model->support_content = $post['support_content'];
-		$model->manual = $post['manual'];
-		$model->rank = $post['rank'];
-		
+		$model = new Policy;
+		$this->packFormData($post, $model);
 		$response = ['code' => 1, 'msg' => '不符合规则'];
 		if ($model->validate()) {
 			$insert = $model->insert();
@@ -113,6 +94,43 @@ class PolicyController extends Controller
 		return $this->serializeData($response);
     }
 	
+	protected function packFormData($post, &$model)
+	{
+		$model->title = $post['title'];
+		$model->thumb = empty($post['thumb']) ? 'default.png' : $post['thumb'];
+		$model->open_time = strtotime($post['date'][0]);
+		$model->end_time = strtotime($post['date'][1]);;
+		$model->type_id = empty($post['type_id']) ? 0 : $post['type_id'];
+		$model->support_way = $post['support_way'];
+		$model->charge_depart = $post['charge_depart'];
+		$model->industry = $post['industry'];
+		$model->scale = $post['scale'];
+		$model->age = $post['age'];
+		$model->brief = $post['brief'];
+		$model->requirement = $post['requirement'];
+		$model->material = $post['material'];
+		$model->support_content = $post['support_content'];
+		$model->original_info = $post['original_info'];
+		$model->manual = $post['manual'];
+		$model->rank = $post['rank'];
+	}
+	
+	/*
+	 * filter the url-path in rich-text content. 
+	 *
+	*/
+	protected function imageDomain($richText)
+	{
+		$pattern = "/src=\"(http|https):\/\/\w+.?\w+\.(com|cn|net):?[0-9]+/i";
+
+		$replacement = "src=\"{ES668_IMAGE_DOMAIN}";
+	
+		$richText = preg_replace($pattern, $replacement, $richText);
+		
+		return $richText;
+		
+	}
+	
     /**
      * Updates an existing Policy model.
      * If update is successful, the browser will be redirected to the 'view' page.
@@ -123,10 +141,20 @@ class PolicyController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-	
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->serializeData(['code' => 0, 'policy_id' => $model->policy_id]);
-        }
+		$post = Yii::$app->request->post();
+		$response = ['code' => 1, 'msg' => '不符合规则'];
+		$model->attributes = $post;
+		$model->setAttributes(['update_time' => time()]);
+        if ($model->validate()) {
+			$update = $model->save();
+			$msg = $insert ? '政策更新成功' : '政策更新失败，请稍后尝试';
+			$response = ['code' => (int)!$insert, 'id' => $model->policy_id, 'msg' => $msg];
+		} else {
+			$validateError = $model->getErrors();
+			$validateError = is_array($validateError) ? join(',', $validateError) : '';
+			$response['msg'] = $validateError;
+		}
+		return $this->serializeData($response);
     }
 
     /**

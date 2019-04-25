@@ -42,9 +42,9 @@ class UploadController extends Controller
             $model->imageFile = UploadedFile::getInstanceByName('imageFile');
 			
             $response = ['code' => 1, 'imgUrl' => '', 'msg' => '只允许 png,jpg 图片类型'];
-			if ($model->upload()) {
+			if ($newName = $model->upload()) {
                 // file is uploaded successfully
-				$response = ['code' => 0, 'imgUrl' => $model->imageFile->name, 'msg' => '上传成功'];
+				$response = ['code' => 0, 'imgUrl' => $newName, 'msg' => '上传成功'];
             }
         }
 		return $this->serializeData($response);
