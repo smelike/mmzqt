@@ -48,6 +48,7 @@ class PolicyController extends Controller
      */
     public function actionIndex(int $page = 1, int $offset = 10)
     {
+		
 		$query = Policy::find()->where(['status' => 0])->orderBy(['policy_id' => SORT_DESC]);
 		$count = $query->count();
 		$pagination = new Pagination(['totalCount' => $count]);
@@ -63,12 +64,10 @@ class PolicyController extends Controller
      * @throws NotFoundHttpException if the model cannot be found
      */
     public function actionView($id)
-    {
-        
+    {	
         $policy = $this->findModel($id);
-		
-		return $this->serializeData($policy);
-       
+		$policy->setScenario('update');
+		return $this->serializeData($policy);  
     }
 
     /**
@@ -140,6 +139,7 @@ class PolicyController extends Controller
      */
     public function actionUpdate($id)
     {
+		$this->setScenario('update');
         $model = $this->findModel($id);
 		$post = Yii::$app->request->post();
 		$response = ['code' => 1, 'msg' => '不符合规则'];

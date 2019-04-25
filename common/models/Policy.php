@@ -115,38 +115,57 @@ class Policy extends \yii\db\ActiveRecord
      */
     public function fields()
     {   
-        return [
-            'policy_id',
-            'title',
-            'thumb',
-			'type_id',
-            'open_time' => function() {
-				return date('Y-m-d', $this->open_time);
-			},
-			'end_time' => function() {
-				return date('Y-m-d', $this->end_time);
-			},
-			/*
-			'create_time' => function() {
-				return date('Y-m-d', $this->create_time);
-			},*/
-			'support_way' => function() {
-				$typeSet = TypeSet::findOne($this->support_way);
-				return $typeSet ? $typeSet->name : '-';
-            },
-			'charge_depart',
-			'industry',
-			'scale',
-			'age',
-			'brief',
-			'requirement',
-			'support_content',
-			'material',
-			'original_info',
-			'manual',
-			'rank',
-			'status',
-			'is_recommend'
-        ];
+		switch ($this->scenario) {
+
+			case 'update':
+				return [
+					'policy_id',
+					'title',
+					'thumb',
+					'type_id',
+					'open_time' => function() {
+						return date('Y-m-d', $this->open_time);
+					},
+					'end_time' => function() {
+						return date('Y-m-d', $this->end_time);
+					},
+					/*
+					'create_time' => function() {
+						return date('Y-m-d', $this->create_time);
+					},*/
+					'support_way',
+					'charge_depart',
+					'industry',
+					'scale',
+					'age',
+					'brief',
+					'requirement',
+					'support_content',
+					'material',
+					'original_info',
+					'manual',
+					'rank',
+					'status',
+					'is_recommend'
+				];
+			
+			default: 
+				return [
+					'policy_id',
+					'title',
+					'thumb',
+					'type_id',
+					'support_way' => function() {
+						$typeSet = TypeSet::findOne($this->support_way);
+						return $typeSet ? $typeSet->name : '-';
+					},
+					'open_time' => function() {
+						return date('Y-m-d', $this->open_time);
+					},
+					'end_time' => function() {
+						return date('Y-m-d', $this->end_time);
+					}
+				];
+		}
     }
 }
