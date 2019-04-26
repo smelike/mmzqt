@@ -1,5 +1,5 @@
 <p align="center">
-    <a href="https://github.com/smelike" target="_blank">
+    <a href="https://github.com/yiisoft" target="_blank">
         <img src="https://avatars0.githubusercontent.com/u/993323" height="100px">
     </a>
     <h1 align="center">Try and build something new.</h1>
@@ -59,3 +59,30 @@ frontend
 vendor/                  contains dependent 3rd-party packages
 environments/            contains environment-based overrides
 ```
+
+Manual
+-------
+
+- 配置 model 中的 rules
+- 配置 model 中 rules 对应的 message
+- 实现 model 中字段 根据场景进行配置
+- 调用 model 查询某条信息
+- model 实现更新记录
+- model 校验调用
+-----
+- 分页 yii\data\Pagination
+```
+        $query = Policy::find()->where(['status' => 0])->orderBy(['policy_id' => SORT_DESC]);
+		$count = $query->count();
+		$pagination = new Pagination(['totalCount' => $count]);
+		$start = ($page - 1) * $offset;
+		$policies = $query->offset($start)->limit($offset)->all();
+		return $this->serializeData(['set' => $policies, 'count' => $count]);
+```
+- 数据实例化返回 $this->serializeData()
+
+Regular Expression
+-------------------
+- $pattern = "/src=\"(http|https):\/\/\w+.?\w+\.(com|cn|net):?[0-9]+/i";
+- $pattern = "/src=\"(http|https):\/\/\w+.?\w+\.(com|cn|net)(:?[0-9]+)?/i";
+
