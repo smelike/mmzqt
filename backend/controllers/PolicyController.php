@@ -67,6 +67,8 @@ class PolicyController extends Controller
     {	
         $policy = $this->findModel($id);
 		$policy->setScenario('update');
+		$policy->original_info = $this->imageDomain($policy->original_info, true);
+		$policy->manual = $this->imageDomain($policy->manual, true);
 		return $this->serializeData($policy);  
     }
 
@@ -109,25 +111,31 @@ class PolicyController extends Controller
 		$model->requirement = $post['requirement'];
 		$model->material = $post['material'];
 		$model->support_content = $post['support_content'];
-		$model->original_info = $post['original_info'];
-		$model->manual = $post['manual'];
+		$model->original_info = $this->imageDomain($post['original_info']);
+		$model->manual = $this->imageDomain($post['manual']);
 		$model->rank = $post['rank'];
 	}
 	
 	/*
-	 * filter the url-path in rich-text content. 
-	 *
+	 * Replace the url-path in rich-text content tag-img's attribute src. 
+	 * Use the identifier {ES668_IMAGE_DOMAIN} instead of the url path.
+	 * Define the constant in config/params.php
 	*/
-	protected function imageDomain($richText)
+	protected function imageDomain($richText, $orientation = false)
 	{
-		$pattern = "/src=\"(http|https):\/\/\w+.?\w+\.(com|cn|net):?[0-9]+/i";
-
+		//$pattern = "/src=\"(http|https):\/\/\w+.?\w+\.(com|cn|net):?[0-9]+/i";
+		
 		$replacement = "src=\"{ES668_IMAGE_DOMAIN}";
-	
-		$richText = preg_replace($pattern, $replacement, $richText);
+		
+		if ($orientation) {
+			$richText = str_replace($replacement, Yii::$app->params('imageDomain'));
+		} else {
+			$pattern = "/src=\"(http|https):\/\/\w+.?\w+\.(com|cn|net)(:?[0-9]+)?/i";
+			
+			$richText = preg_replace($pattern, $replacement, $richText);
+		}
 		
 		return $richText;
-		
 	}
 	
     /**
@@ -142,9 +150,11 @@ class PolicyController extends Controller
         $model = $this->findModel($id);
 		$post = Yii::$app->request->post();
 		$response = ['code' => 1, 'msg' => '不符合规则'];
+		
+		$post['original_info'] = $this->imageDomain($post['original_info']);
+		$post['manual'] = $this->imageDomain($post['manual']);
 		$model->attributes = $post;
-		// $time = ['update_time' => time(), 'open_time' => strtotime($post['date'][0]), 'end_time' => strtotime($post['date'][1])];
-		// $model->setAttributes($time);
+		
         if ($model->validate()) {
 			$update = $model->save();
 			$time = ['update_time' => time(), 'open_time' => strtotime($post['date'][0]), 'end_time' => strtotime($post['date'][1])];
