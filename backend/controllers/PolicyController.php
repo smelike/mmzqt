@@ -144,7 +144,7 @@ class PolicyController extends Controller
 		$response = ['code' => 1, 'msg' => '不符合规则'];
 		$model->attributes = $post;
 		// $time = ['update_time' => time(), 'open_time' => strtotime($post['date'][0]), 'end_time' => strtotime($post['date'][1])];
-		// $model->attributes = $time;
+		// $model->setAttributes($time);
         if ($model->validate()) {
 			$update = $model->save();
 			$time = ['update_time' => time(), 'open_time' => strtotime($post['date'][0]), 'end_time' => strtotime($post['date'][1])];
