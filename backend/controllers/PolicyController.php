@@ -139,16 +139,19 @@ class PolicyController extends Controller
      */
     public function actionUpdate($id)
     {
-		$this->setScenario('update');
         $model = $this->findModel($id);
 		$post = Yii::$app->request->post();
 		$response = ['code' => 1, 'msg' => '不符合规则'];
 		$model->attributes = $post;
-		$model->setAttributes(['update_time' => time()]);
+		// $time = ['update_time' => time(), 'open_time' => strtotime($post['date'][0]), 'end_time' => strtotime($post['date'][1])];
+		// $model->attributes = $time;
         if ($model->validate()) {
 			$update = $model->save();
-			$msg = $insert ? '政策更新成功' : '政策更新失败，请稍后尝试';
-			$response = ['code' => (int)!$insert, 'id' => $model->policy_id, 'msg' => $msg];
+			$time = ['update_time' => time(), 'open_time' => strtotime($post['date'][0]), 'end_time' => strtotime($post['date'][1])];
+			$model->attributes = $time;
+			$updateTime = $model->save();
+			$msg = $update ? '政策更新成功' : '政策更新失败，请稍后尝试';
+			$response = ['code' => (int)!$update, 'id' => $model->policy_id, 'msg' => $msg];
 		} else {
 			$validateError = $model->getFirstErrors();
 			$validateError = is_array($validateError) ? join(',', $validateError) : '';

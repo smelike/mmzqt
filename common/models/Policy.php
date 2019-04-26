@@ -146,7 +146,10 @@ class Policy extends \yii\db\ActiveRecord
 					'manual',
 					'rank',
 					'status',
-					'is_recommend'
+					'is_recommend',
+					'date' => function() {
+						return [date('Y-m-d', $this->open_time), date('Y-m-d', $this->end_time)];
+					}
 				];
 			
 			default: 
