@@ -37,6 +37,12 @@ class PolicyController extends Controller
 					'Access-Control-Max-Age'           => 3600
 				],
 			],
+			'access' => [
+				'class' => AccessControl::className(),
+				'rules' => [
+					['actions' => ['index', 'create', 'view', 'update', 'delete'], 'allow' => true, 'roles' => ['@']]
+				],
+			]
 		]);
     }
 

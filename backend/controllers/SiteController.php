@@ -2,7 +2,7 @@
 namespace backend\controllers;
 
 use Yii;
-use yii\web\Controller;
+use yii\rest\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use common\models\LoginForm;
@@ -13,33 +13,37 @@ use common\models\User;
  */
 class SiteController extends Controller
 {
-    /**
+    public $enableCsrfValidation = false;
+	/**
      * {@inheritdoc}
      */
     public function behaviors()
     {
-        return [
-            'access' => [
-                'class' => AccessControl::className(),
-                'rules' => [
-                    [
-                        'actions' => ['login', 'error'],
-                        'allow' => true,
-                    ],
-                    [
-                        'actions' => ['logout', 'index'],
-                        'allow' => true,
-                        'roles' => ['@'],
-                    ],
-                ],
-            ],
-            'verbs' => [
-                'class' => VerbFilter::className(),
-                'actions' => [
-                    'logout' => ['post'],
-                ],
-            ],
-        ];
+        return array_merge(
+			parent::behaviors(),
+			[
+				'access' => [
+					'class' => AccessControl::className(),
+					'rules' => [
+						[
+							'actions' => ['login', 'error'],
+							'allow' => true,
+						],
+						[
+							'actions' => ['logout', 'index'],
+							'allow' => true,
+							'roles' => ['@'],
+						],
+					],
+				],
+				'verbs' => [
+					'class' => VerbFilter::className(),
+					'actions' => [
+						'logout' => ['post'],
+					],
+				],
+			]
+		);
     }
 
     /**
@@ -76,19 +80,22 @@ class SiteController extends Controller
             //return $this->goHome();
         }
 		*/
-		
         $post = Yii::$app->request->post();
 		$model = new LoginForm();
 		$model->login_name = $post['login_name'];
 		$model->password = $post['password'];
+		
         if ($model->login()) {
-				
-			echo Yii::$app->user->getId();
-			$response = ['code' => 0, 'token' => ''];
-            return $this->serializeData($response);
+			$user = Yii::$app->user->getIdentity();
+			$msg = "登录成功";
+			$response = ['code' => 0, 'token' => $user->token, 'msg' => $msg];
         } else {
-            $model->password = '';
+			$model->password = '';
+			$errors = $model->getFirstErrors();
+			$response = ['code' => 1, 'msg' => array_shift($errors)];
         }
+		
+		return $this->serializeData($response);
     }
 
     /**
@@ -99,8 +106,9 @@ class SiteController extends Controller
     public function actionLogout()
     {
         Yii::$app->user->logout();
-
-        return $this->goHome();
+		// 退出之后，需要更新用户 token
+		$response = ['code' => 0, 'msg' => '成功退出'];
+        return $this->serializeData($response);
     }
     
 }
