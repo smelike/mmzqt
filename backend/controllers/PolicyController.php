@@ -5,6 +5,7 @@ namespace backend\controllers;
 use Yii;
 use common\models\Policy;
 use yii\rest\Controller;
+use common\controllers\RestController;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
@@ -12,9 +13,9 @@ use yii\data\Pagination;
 /**
  * PolicyController implements the CRUD actions for Policy model.
  */
-class PolicyController extends Controller
+class PolicyController extends RestController
 {
-	
+	/*
 	public $enableCsrfValidation = false;
 	
 	public static function allowedDomains() {
@@ -22,12 +23,14 @@ class PolicyController extends Controller
 			'http://localhost:8080',
 		];
 	}
+	*/
     /**
      * {@inheritdoc}
      */
     public function behaviors()
     {
 		return array_merge(parent::behaviors(), [
+			/*
 			'corsFilter'  => [
 				'class' => \yii\filters\Cors::className(),
 				'cors'  => [
@@ -37,10 +40,11 @@ class PolicyController extends Controller
 					'Access-Control-Max-Age'           => 3600
 				],
 			],
+			*/
 			'access' => [
 				'class' => AccessControl::className(),
 				'rules' => [
-					['actions' => ['index', 'create', 'view', 'update', 'delete'], 'allow' => true, 'roles' => ['@']]
+					['actions' => ['index', 'create', 'view', 'update', 'delete'], 'allow' => true, 'roles' => ['?']]
 				],
 			]
 		]);

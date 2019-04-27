@@ -21,9 +21,10 @@ class LoginForm extends Model
      */
     public function rules()
     {
+		
         return [
             // username and password are both required
-            [['login_name', 'password'], 'required'],
+            [['login_name', 'password'], 'required', 'message' => '请先登录，再进行操作'],
             // rememberMe must be a boolean value
             //['rememberMe', 'boolean'],
             // password is validated by validatePassword()

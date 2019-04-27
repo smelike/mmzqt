@@ -24,7 +24,7 @@ class RestController extends Controller
 				'cors'  => [
 					'Origin'                           => static::allowedDomains(),
 					'Access-Control-Request-Method'    => ['POST', 'OPTIONS'],
-					'Access-Control-Allow-Credentials' => true,
+					'Access-Control-Allow-Credentials' => false,
 					'Access-Control-Max-Age'           => 3600
 				],
 			],
