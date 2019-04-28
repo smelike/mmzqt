@@ -2,35 +2,20 @@
 
 namespace common\controllers;
 
+use Yii;
 use yii\rest\Controller;
 
 class RestController extends Controller 
 {
 	public $enableCsrfValidation = false;
 	
-	public static function allowedDomains() {
-		return [
-			'http://localhost:8080',
-		];
+	public function __construct($id, $module, $config = []) {
+		
+		parent::__construct($id, $module, $config);
+		$token = Yii::$app->request->headers->get('X-Token');
+		$user = Yii::$app->user->getIdentity();
+		return $this->serializeData(['code' => 1, 'response' => ['msg' => 'token 对不上']]);
 	}
-    /**
-     * {@inheritdoc}
-     */
-    public function behaviors()
-    {
-		return array_merge(parent::behaviors(), [
-			'corsFilter'  => [
-				'class' => \yii\filters\Cors::className(),
-				'cors'  => [
-					'Origin'                           => static::allowedDomains(),
-					'Access-Control-Request-Method'    => ['POST', 'OPTIONS'],
-					'Access-Control-Allow-Credentials' => false,
-					'Access-Control-Max-Age'           => 3600
-				],
-			],
-		]);
-    }
-	
 }
 
 ?>

@@ -3,7 +3,6 @@
 namespace backend\controllers;
 
 use Yii;
-use yii\rest\Controller;
 use common\models\TypeGroup;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -12,33 +11,8 @@ use yii\data\Pagination;
 /**
  * TypeGroupController implements the CRUD actions for TypeGroup model.
  */
-class TypeGroupController extends Controller
+class TypeGroupController extends BaseController
 {
-   public $enableCsrfValidation = false;
-	
-	public static function allowedDomains() {
-		return [
-			'http://localhost:8080',
-		];
-	}
-    /**
-     * {@inheritdoc}
-     */
-    public function behaviors()
-    {
-		return array_merge(parent::behaviors(), [
-			'corsFilter'  => [
-				'class' => \yii\filters\Cors::className(),
-				'cors'  => [
-					'Origin'                           => static::allowedDomains(),
-					'Access-Control-Request-Method'    => ['POST', 'OPTIONS'],
-					'Access-Control-Allow-Credentials' => true,
-					'Access-Control-Max-Age'           => 3600
-				],
-			],
-		]);
-    }
-
     /**
      * Lists all TypeGroup models.
      * @return mixed
@@ -51,7 +25,8 @@ class TypeGroupController extends Controller
 		$start = ($page - 1) * $offset;
 		$offset = ($offset > 0) ? $offset : 10;
 		$typeGroup = $query->offset($start)->limit($offset)->all();
-		return $this->serializeData(['set' => $typeGroup, 'count' => $count]);
+		$data = $typeGroup ? ['set' => $typeGroup, 'count' => $count] : ['msg' => '暂无数据'];
+		return $this->response($data);
     }
 
     /**
@@ -63,7 +38,9 @@ class TypeGroupController extends Controller
     public function actionView($id)
     {
         $typeGroup = $this->findModel($id);
-		return $this->serializeData($typeGroup);  
+		$data = $typeGroup ? $typeGroup->toArray() : ['msg' => '暂无数据'];
+		
+		return $this->response($data);  
     }
 
     /**
@@ -74,15 +51,15 @@ class TypeGroupController extends Controller
     public function actionCreate()
     {
         $model = new TypeGroup();
-		$response = ['code' => 1, 'msg' => '填写内容不能为空'];
+		$data = ['msg' => '填写内容不能为空'];
 		$post = Yii::$app->request->post();
 
 		$model->alias = isset($post['alias']) ? $post['alias'] : '';
 		$model->group_name = isset($post['group_name']) ? $post['group_name'] : '';
         if ($model->alias && $model->group_name && $model->save()) {
-            $response = ['code' => 0, 'id' => $model->tg_id, 'msg' => '类型分组创建成功'];
+            $data = ['id' => $model->primaryKey];
         }
-        return $this->serializeData($response);
+        return $this->response($data);
     }
 
     /**
@@ -98,17 +75,17 @@ class TypeGroupController extends Controller
 		$post = Yii::$app->request->post();
 		$post = array_filter($post);
 		
-		$response = ['code' => 1, 'msg' => '更新内容不能为空'];
+		$data = ['msg' => '更新内容不能为空'];
 		if (isset($post['alias'], $post['group_name'])) {
 			$updateData = ['alias' => $post['alias'], 'group_name' => $post['group_name']];
 			$updateData = array_filter($updateData);
-			$response = ['code' => 1, 'msg' => '更新内容失败'];
 			if (!empty($updateData)) {
 				$update = $model->updateAttributes(array_merge($updateData, array('update_time' => time())));
+				$data = $update ? ['id' => $model->primaryKey] : ['msg' => '删除失败'];
 			}
 		}
 		
-		return $this->serializeData($response);
+		return $this->response($data);
     }
 
     /**
@@ -122,7 +99,8 @@ class TypeGroupController extends Controller
     {
         $model = $this->findModel($id);
 		$update = $model->updateAttributes(['status' => 1, 'update_time' => time()]);
-        return $this->serializeData(['code' => !$update, 'policy_id' => $id]);
+		$data = $update ? ['id' => $model->primaryKey] : ['msg' => '删除失败'];
+        return $this->response($data);
     }
 
     /**

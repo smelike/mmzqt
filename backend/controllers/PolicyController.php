@@ -4,58 +4,33 @@ namespace backend\controllers;
 
 use Yii;
 use common\models\Policy;
-use yii\rest\Controller;
-use common\controllers\RestController;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-use yii\filters\AccessControl;
 use yii\data\Pagination;
 /**
  * PolicyController implements the CRUD actions for Policy model.
  */
-class PolicyController extends RestController
+class PolicyController extends BaseController
 {
-	/*
-	public $enableCsrfValidation = false;
 	
-	public static function allowedDomains() {
-		return [
-			'http://localhost:8080',
-		];
-	}
-	*/
-    /**
-     * {@inheritdoc}
-     */
-    public function behaviors()
-    {
-		return array_merge(parent::behaviors(), [
-			/*
-			'corsFilter'  => [
-				'class' => \yii\filters\Cors::className(),
-				'cors'  => [
-					'Origin'                           => static::allowedDomains(),
-					'Access-Control-Request-Method'    => ['POST', 'OPTIONS'],
-					'Access-Control-Allow-Credentials' => true,
-					'Access-Control-Max-Age'           => 3600
-				],
-			],
-			*/
-			'access' => [
-				'class' => AccessControl::className(),
-				'rules' => [
-					['actions' => ['index', 'create', 'view', 'update', 'delete'], 'allow' => true, 'roles' => ['?']]
-				],
-			]
-		]);
-    }
-
     /**
      * Lists all Policy models.
 	 * @param integer $page 
 	 * @param integer $offset
      * @return mixed
      */
+	public function behaviors() {
+		return array_merge( parent::behaviors(), [
+				'verbs' => [
+					'class' => VerbFilter::className(),
+					'actions' => [
+						//'logout' => ['get'],
+					],
+				]
+			]
+		);
+	}
+	
     public function actionIndex(int $page = 1, int $offset = 10)
     {
 		
@@ -64,7 +39,9 @@ class PolicyController extends RestController
 		$pagination = new Pagination(['totalCount' => $count]);
 		$start = ($page - 1) * $offset;
 		$policies = $query->offset($start)->limit($offset)->all();
-		return $this->serializeData(['set' => $policies, 'count' => $count]);
+		
+		$data = ['set' => $policies, 'count' => $count];
+		return $this->response($data);
     }
 
     /**
@@ -79,7 +56,8 @@ class PolicyController extends RestController
 		$policy->setScenario('update');
 		$policy->original_info = $this->imageDomain($policy->original_info, true);
 		$policy->manual = $this->imageDomain($policy->manual, true);
-		return $this->serializeData($policy);  
+
+		return $this->response($policy->toArray());
     }
 
     /**
@@ -92,17 +70,16 @@ class PolicyController extends RestController
 		$post = Yii::$app->request->post();
 		$model = new Policy;
 		$this->packFormData($post, $model);
-		$response = ['code' => 1, 'msg' => '不符合规则'];
+		
 		if ($model->validate()) {
 			$insert = $model->insert();
-			$msg = $insert ? '政策创建成功' : '政策创建失败，请稍后尝试';
-			$response = ['code' => (int)!$insert, 'id' => $model->policy_id, 'msg' => $msg];
+			$data = $insert ? ['id' => $model->primaryKey] : ['msg' => '政策创建失败'];
 		} else {
 			$validateError = $model->getFirstErrors();
 			$validateError = is_array($validateError) ? join(',', $validateError) : '';
-			$response['msg'] = $validateError;
+			$data['msg'] = $validateError;
 		}
-		return $this->serializeData($response);
+		return $this->response($data);
     }
 	
 	protected function packFormData($post, &$model)
@@ -170,19 +147,19 @@ class PolicyController extends RestController
 		$post['manual'] = $this->imageDomain($post['manual']);
 		$model->attributes = $post;
 		
+		$data = [];
         if ($model->validate()) {
 			$update = $model->save();
 			$time = ['update_time' => time(), 'open_time' => strtotime($post['date'][0]), 'end_time' => strtotime($post['date'][1])];
 			$model->attributes = $time;
 			$updateTime = $model->save();
-			$msg = $update ? '政策更新成功' : '政策更新失败，请稍后尝试';
-			$response = ['code' => (int)!$update, 'id' => $model->policy_id, 'msg' => $msg];
+			$data = $update ? ['id' => $model->primaryKey] : ['msg' => '政策更新失败，请稍后尝试'];
 		} else {
 			$validateError = $model->getFirstErrors();
 			$validateError = is_array($validateError) ? join(',', $validateError) : '';
-			$response['msg'] = $validateError;
+			$data['msg'] = $validateError;
 		}
-		return $this->serializeData($response);
+		return $this->response($data);
     }
 
     /**
@@ -196,8 +173,8 @@ class PolicyController extends RestController
     {
         $model = $this->findModel(['policy_id' => $id]);
 		$update = $model->updateAttributes(['status' => 2, 'update_time' => time()]);
-		$msg = $update ? '删除成功' : '删除失败，稍后尝试';
-        return $this->serializeData(['code' => (int)!$update, 'id' => $id, 'msg' => $msg]);
+		$update ? $data['id'] = $model->primaryKey : $data['msg'] = '政策删除失败';
+        return $this->response($data);
     }
 
     /**
