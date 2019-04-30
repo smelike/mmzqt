@@ -34,14 +34,14 @@ class PolicyController extends BaseController
     public function actionIndex(int $page = 1, int $offset = 10)
     {
 		
-		$query = Policy::find()->where(['status' => 0])->orderBy(['policy_id' => SORT_DESC]);
-		$count = $query->count();
-		$pagination = new Pagination(['totalCount' => $count]);
-		$start = ($page - 1) * $offset;
-		$policies = $query->offset($start)->limit($offset)->all();
-		
-		$data = ['set' => $policies, 'count' => $count];
-		return $this->response($data);
+			$query = Policy::find()->where(['status' => 0])->orderBy(['policy_id' => SORT_DESC]);
+			$count = $query->count();
+			$pagination = new Pagination(['totalCount' => $count]);
+			$start = ($page - 1) * $offset;
+			$policies = $query->offset($start)->limit($offset)->all();
+			
+			$data = ['set' => $policies, 'count' => $count];
+			return $this->response($data);
     }
 
     /**
@@ -52,12 +52,12 @@ class PolicyController extends BaseController
      */
     public function actionView($id)
     {	
-        $policy = $this->findModel($id);
-		$policy->setScenario('update');
-		$policy->original_info = $this->imageDomain($policy->original_info, true);
-		$policy->manual = $this->imageDomain($policy->manual, true);
+      $policy = $this->findModel($id);
+			$policy->setScenario('update');
+			$policy->original_info = $this->imageDomain($policy->original_info, true);
+			$policy->manual = $this->imageDomain($policy->manual, true);
 
-		return $this->response($policy->toArray());
+			return $this->response($policy->toArray());
     }
 
     /**
@@ -67,19 +67,19 @@ class PolicyController extends BaseController
      */
     public function actionCreate()
     {
-		$post = Yii::$app->request->post();
-		$model = new Policy;
-		$this->packFormData($post, $model);
-		
-		if ($model->validate()) {
-			$insert = $model->insert();
-			$data = $insert ? ['id' => $model->primaryKey] : ['msg' => '政策创建失败'];
-		} else {
-			$validateError = $model->getFirstErrors();
-			$validateError = is_array($validateError) ? join(',', $validateError) : '';
-			$data['msg'] = $validateError;
-		}
-		return $this->response($data);
+			$post = Yii::$app->request->post();
+			$model = new Policy;
+			$this->packFormData($post, $model);
+			
+			if ($model->validate()) {
+				$insert = $model->insert();
+				$data = $insert ? ['id' => $model->primaryKey] : ['msg' => '政策创建失败'];
+			} else {
+				$validateError = $model->getFirstErrors();
+				$validateError = is_array($validateError) ? join(',', $validateError) : '';
+				$data['msg'] = $validateError;
+			}
+			return $this->response($data);
     }
 	
 	protected function packFormData($post, &$model)
@@ -101,33 +101,6 @@ class PolicyController extends BaseController
 		$model->original_info = $this->imageDomain($post['original_info']);
 		$model->manual = $this->imageDomain($post['manual']);
 		$model->rank = $post['rank'];
-	}
-	
-	/*
-	 * Replace the url-path in rich-text content tag-img's attribute src. 
-	 * Use the identifier {ES668_IMAGE_DOMAIN} instead of the url path.
-	 * Define the constant in config/params.php
-	 * @param $orientation 
-	 * false means replace the url-path to identifier
-	 * true means 
-	*/
-	protected function imageDomain($richText, $orientation = false)
-	{
-		//$pattern = "/src=\"(http|https):\/\/\w+.?\w+\.(com|cn|net):?[0-9]+/i";
-		
-		$identifier = "src=\"{ES668_IMAGE_DOMAIN}";
-		
-		if ($orientation) {
-			$search = $identifier;
-			$replacement = "src=\"" . Yii::$app->params['imageDomain'];
-			$richText = str_replace($search, $replacement, $richText);
-		} else {
-			$pattern = "/src=\"(http|https):\/\/\w+.?\w+\.(com|cn|net)(:?[0-9]+)?/i";
-			
-			$richText = preg_replace($pattern, $identifier, $richText);
-		}
-		
-		return $richText;
 	}
 	
     /**
