@@ -32,6 +32,7 @@ class BaseController extends \yii\rest\Controller
 	
 	public function response($data) 
 	{	
+		Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 		$code = empty($data['msg']) ? 0 : 1;
 		$response = ['code' => $code, 'data' => $data];
 		return $this->asJson($response);
@@ -50,7 +51,7 @@ class BaseController extends \yii\rest\Controller
 		//$pattern = "/src=\"(http|https):\/\/\w+.?\w+\.(com|cn|net):?[0-9]+/i";
 		
 		$identifier = "src=\"{ES668_IMAGE_DOMAIN}";
-		$richText = false;
+		
 		if ($orientation) {
 			$search = $identifier;
 			$replacement = "src=\"" . Yii::$app->params['imageDomain'];

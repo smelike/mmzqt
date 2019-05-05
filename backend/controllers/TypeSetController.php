@@ -94,10 +94,9 @@ class TypeSetController extends BaseController
      */
     public function actionDelete($id)
     {
-        $model = $this->findModel($id);
-		$update = $model->updateAttributes(['status' => 1, 'update_time' => time()]);
-	
-		$response = $update ? ['id' => $model->primaryKey] : ['msg' => '删除失败'];
+        $delete = $this->findModel($id)->delete();
+		//$update = $model->updateAttributes(['status' => 1, 'update_time' => time()]);
+		$response = $delete ? ['id' => $model->primaryKey] : ['msg' => '删除失败'];
         return $this->response($response);
     }
 

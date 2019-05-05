@@ -3,6 +3,7 @@
 namespace common\models;
 
 use Yii;
+use common\models\TypeSet;
 
 /**
  * This is the model class for table "gov_headline".
@@ -39,6 +40,7 @@ class GovHeadline extends \yii\db\ActiveRecord
             [['create_time', 'update_time'], 'default', 'value' => time()],
             [['favor_num', 'page_view'], 'default', 'value' => 0],
             ['title', 'required', 'message' => '标题不能为空'],
+            ['title', 'unique', 'message' => '该标题存在'],
             ['detail', 'required', 'message' => '具体内容不能为空'],
             ['thumb', 'required', 'message' => '缩略图不能为空'],
             ['type_id', 'required', 'message' => '类型不能为空'],
@@ -70,5 +72,40 @@ class GovHeadline extends \yii\db\ActiveRecord
     public static function find()
     {
         return new GovHeadlineQuery(get_called_class());
+    }
+
+    public function fields()
+    {
+        switch ($this->scenario) {
+            case 'update':
+                return [
+                    'top_id', 
+                    'title', 
+                    'type_id', 
+                    'thumb', 
+                    'detail',                     'favor_num' => function () {
+                        return $this->favor_num ? $this->favor_num : 0;
+                    },
+                    'page_view' => function () {
+                        return $this->page_view ? $this->page_view : 0;
+                    }
+                ];
+            default: 
+                return [
+                    'top_id',
+                    'title',
+                    'type_id',
+                    'type_name' => function () {
+                        $typeSet = TypeSet::findOne($this->type_id);
+                        return $typeSet ? $typeSet->name : '-';
+                    },
+                    'thumb' => function() {
+                        return Yii::$app->params['imageDomain'] . '/' . $this->thumb;
+                    },
+                    'create_time' => function() {
+                        return date('Y-m-d', $this->create_time);
+                    }
+                ];
+        }
     }
 }

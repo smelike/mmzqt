@@ -4,6 +4,7 @@ namespace backend\controllers;
 
 use Yii;
 use common\models\TypeGroup;
+use common\models\TypeSet;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\data\Pagination;
@@ -19,7 +20,7 @@ class TypeGroupController extends BaseController
      */
     public function actionIndex(int $page = 1, int $offset = 10)
     {
-		$query = TypeGroup::find()->orderBy(['tg_id' => SORT_DESC]);
+		$query = TypeGroup::find()->where(['status' => 0])->orderBy(['tg_id' => SORT_DESC]);
 		$count = $query->count();
 		$pagination = new Pagination(['totalCount' => $count]);
 		$start = ($page - 1) * $offset;
@@ -98,8 +99,14 @@ class TypeGroupController extends BaseController
     public function actionDelete($id)
     {
         $model = $this->findModel($id);
-		$update = $model->updateAttributes(['status' => 1, 'update_time' => time()]);
-		$data = $update ? ['id' => $model->primaryKey] : ['msg' => '删除失败'];
+        $typeSetCount = TypeSet::find()->where(['alias' => $model->alias])->count();
+
+        $data = ['msg' => '必须先将类型清空，才能删除分组。'];
+        if (empty($typeSetCount)) {
+            //$update = $model->updateAttributes(['status' => 1]);
+            $delete = $model->delete();
+            $data = $delete ? ['id' => $model->primaryKey] : ['msg' => '删除失败'];
+        }
         return $this->response($data);
     }
 

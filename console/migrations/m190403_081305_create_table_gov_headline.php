@@ -23,8 +23,8 @@ class m190403_081305_create_table_gov_headline extends Migration
 			'type_id' => $this->tinyInteger(),
 			'title' => $this->string(128),
 			'detail' => $this->text(),
-			'favor_num' => $this->smallInteger(),
-			'page_view' => $this->smallInteger(),
+			'favor_num' => $this->smallInteger()->defaultValue(0),
+			'page_view' => $this->smallInteger()->defaultValue(0),
 			'create_time' => $this->integer(),
 			'update_time' => $this->integer()
 		], $tableOptions);

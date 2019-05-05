@@ -112,27 +112,27 @@ class PolicyController extends BaseController
      */
     public function actionUpdate($id)
     {
-        $model = $this->findModel($id);
-		$post = Yii::$app->request->post();
-		$response = ['code' => 1, 'msg' => '不符合规则'];
-		
-		$post['original_info'] = $this->imageDomain($post['original_info']);
-		$post['manual'] = $this->imageDomain($post['manual']);
-		$model->attributes = $post;
-		
-		$data = [];
-        if ($model->validate()) {
-			$update = $model->save();
-			$time = ['update_time' => time(), 'open_time' => strtotime($post['date'][0]), 'end_time' => strtotime($post['date'][1])];
-			$model->attributes = $time;
-			$updateTime = $model->save();
-			$data = $update ? ['id' => $model->primaryKey] : ['msg' => '政策更新失败，请稍后尝试'];
-		} else {
-			$validateError = $model->getFirstErrors();
-			$validateError = is_array($validateError) ? join(',', $validateError) : '';
-			$data['msg'] = $validateError;
-		}
-		return $this->response($data);
+			$model = $this->findModel($id);
+			$post = Yii::$app->request->post();
+			$response = ['code' => 1, 'msg' => '不符合规则'];
+			
+			$post['original_info'] = $this->imageDomain($post['original_info']);
+			$post['manual'] = $this->imageDomain($post['manual']);
+			$model->attributes = $post;
+			
+			$data = [];
+			if ($model->validate()) {
+				$update = $model->save();
+				$time = ['update_time' => time(), 'open_time' => strtotime($post['date'][0]), 'end_time' => strtotime($post['date'][1])];
+				$model->attributes = $time;
+				$update = $model->save();
+				$data = $update ? ['id' => $model->primaryKey] : ['msg' => '政策更新失败，请稍后尝试'];
+			} else {
+				$validateError = $model->getFirstErrors();
+				$validateError = is_array($validateError) ? join(',', $validateError) : '';
+				$data['msg'] = $validateError;
+			}
+			return $this->response($data);
     }
 
     /**
@@ -144,10 +144,14 @@ class PolicyController extends BaseController
      */
     public function actionDelete($id)
     {
-        $model = $this->findModel(['policy_id' => $id]);
-		$update = $model->updateAttributes(['status' => 2, 'update_time' => time()]);
-		$update ? $data['id'] = $model->primaryKey : $data['msg'] = '政策删除失败';
-        return $this->response($data);
+      $model = $this->findModel(['policy_id' => $id]);
+			$update = $model->updateAttributes(['status' => 2, 'update_time' => time()]);
+			$data = ['msg' => '政策删除失败'];
+
+			if ($update) {
+				$data = ['id' => $model->primaryKey, 'count' => GovHeadline::find()->where(['status' => 0])->count()];
+			}
+      return $this->response($data);
     }
 
     /**

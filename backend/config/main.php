@@ -51,17 +51,26 @@ return [
 				'type-set/<alias:\w+>' => 'type-set/index',
 				'type-set/view/<id:\d+>' => 'type-set/view',
 				'type-set/update/<id:\d+>' => 'type-set/update',
-				'type-set/delete/<id:\d+>' => 'type-set/delete',
+                'type-set/delete/<id:\d+>' => 'type-set/delete',
+                
 				'policy' => 'policy/index',
 				'policy/<page:\d+>/<offset:\d+>' => 'policy/index',
 				'policy/view/<id:\d+>' => 'policy/view',
 				'policy/update/<id:\d+>' => 'policy/update',
 				'policy/delete/<id:\d+>' => 'policy/delete',
-				'type-group' => 'type-group/index',
+                
+                'type-group' => 'type-group/index',
 				'type-group/<page:\d+>/<offset:\d+>' => 'type-group/index',
 				'type-group/view/<id:\d+>' => 'type-group/view',
 				'type-group/update/<id:\d+>' => 'type-group/update',
-				'type-group/delete/<id:\d+>' => 'type-group/delete'
+                'type-group/delete/<id:\d+>' => 'type-group/delete',
+                
+                'gov-headline' => 'gov-headline/index',
+                'gov-headline/<page:\d+>/<offset:\d+>' => 'gov-headline/index',
+                'gov-headline/view/<id:\d+>' => 'gov-headline/view',
+                'gov-headline/update/<id:\d+>' => 'gov-headline/update',
+                'gov-headline/delete/<id:\d+>' => 'gov-headline/delete'
+                
             ],
         ],
     ],
