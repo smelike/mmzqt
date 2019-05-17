@@ -7,8 +7,22 @@ use yii\rest\Controller;
 use common\models\UploadForm;
 use yii\web\UploadedFile;
 
-class UploadController extends BaseController
+class UploadController extends Controller
 {
+    // public $modelClass = "common\models\Upload";
+	
+	/*
+    public function actions()
+	{
+		$actions = parent::actions();
+		unset($actions['index']);
+		unset($actions['create']);
+		unset($actions['update']);
+		unset($actions['view']);
+		unset($actions['delete']);
+		return $actions;
+    }
+    */
     public function actionIndex()
     {
 		$data = ['imgUrl' => '', 'msg' => '上传内容不能为空'];
@@ -22,6 +36,6 @@ class UploadController extends BaseController
 				$data = ['imgUrl' => $newName];
             }
         }
-		return $this->response($data);
+		return $data;
     }
 }

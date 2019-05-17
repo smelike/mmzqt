@@ -6,33 +6,74 @@ use Yii;
 use common\models\GovHeadline;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-use yii\data\Pagination;
+use yii\data\ActiveDataProvider;
 
 /**
  * GovHeadlineController implements the CRUD actions for GovHeadline model.
  */
 class GovHeadlineController extends BaseController
 {
-
+    public $modelClass = "common\models\GovHeadline";
+    
+    public function actions()
+    {
+        $actions = parent::actions();
+        unset($actions['index']);
+        unset($actions['create']);
+        unset($actions['update']);
+        unset($actions['view']);
+        unset($actions['delete']);
+        return $actions;
+    }
     /**
      * Lists all GovHeadline models.
      * @param integer $page - the page number
      * @param integer $offset - the length of each page
      * @return mixed
      */
-    public function actionIndex(int $page = 1, int $offset = 10)
+    public function actionIndex(int $page = 1, int $limit = 10)
     {
-
-        $query = GovHeadline::find()->where(['status' => 0])->orderBy(['top_id' => SORT_DESC]);
-        $count = $query->count();
-        $pagination = new Pagination(['totalCount' => $count]);
-        $start = ($page - 1) * $offset;
-
-        $headlines = $query->offset($start)->limit($offset)->all();
-        $data = ['set' => $headlines, 'count' => $count];
-        return $this->response($data);
+        $provider = new ActiveDataProvider(
+            [
+                'query' => $this->sortByFilters(),
+                'pagination' => ['pageSize' => $limit],
+                'sort' => [
+                    'defaultOrder' => ['top_id' => SORT_DESC]
+                ]
+            ]
+        );
+        $data = [
+            'set' => $provider->getModels(),
+            'count' => $provider->getTotalCount()
+        ];
+        return $data;
     }
+    /**
+     * Sort headlines by request get params
+     */
+    private function sortByFilters()
+    {
+        $gets = Yii::$app->request->get();
+        
+        if (empty($gets['type_id']) && empty($gets['create_time']) && empty($gets['page_view'])) {
+            $orderBy = ['top_id' => SORT_DESC];
+        }
+        
+        $where = ['status' => 0];
+        if (isset($gets['type_id']) && $gets['type_id']) {
+            $where['type_id'] = $gets['type_id'];
+        }
 
+        if (isset($gets['create_time']) && $gets['create_time']) {
+            $orderBy['create_time'] = ($gets['create_time'] == 'DESC') ? SORT_DESC : SORT_ASC;
+        }
+
+        if (isset($gets['page_view']) && $gets['page_view']) {
+            $orderBy['page_view']  = ($gets['page_view'] == 'DESC') ? SORT_DESC : SORT_ASC;
+        }
+        $query =  GovHeadline::find()->where($where)->orderBy($orderBy);
+        return $query;
+    }
     /**
      * Displays a single GovHeadline model.
      * @param integer $id
@@ -44,8 +85,7 @@ class GovHeadlineController extends BaseController
         $headline = $this->findModel($id);
         $headline->setScenario('update');
         $headline->updateCounters(['page_view' => 1]);
-        $data = $headline;
-        return $this->response($data);
+        return $headline;
     }
 
     /**
@@ -55,25 +95,16 @@ class GovHeadlineController extends BaseController
      */
     public function actionCreate()
     {
-    
-        $model = new GovHeadline();
-        $post = Yii::$app->request->post();
-        $pieces = explode('/', $post['thumb']);
-        $post['thumb'] = array_pop($pieces);
-        $post['detail'] = $this->imageDomain($post['detail']);
-        $model->attributes = $post;
-
-        $data = ['msg' => '头条创建失败'];
-        if ($model->validate()) {
-            $insert = $model->insert();
-            $insert ? $data = ['id' => $model->primaryKey] : '';
+        $modelClass = $this->modelClass;
+        $model = new $modelClass;
+        if ($model->load(Yii::$app->getRequest()->getBodyParams(), '') && $model->save()) {
+            $data = ['id' => $model->primaryKey, 'msg' => '头条创建成功'];
+            return $data;
         } else {
             $validateError = $model->getFirstErrors();
-			$validateError = is_array($validateError) ? join(',', $validateError) : '';
-			$data['msg'] = $validateError;
+            $validateError = is_array($validateError) ? join(',', $validateError) : '头条创建失败';
+            throw new \yii\web\HttpException(402, $validateError);
         }
-
-        return $this->response($data);
     }
 
     /**
@@ -86,25 +117,13 @@ class GovHeadlineController extends BaseController
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-        $post = Yii::$app->request->post();
-        $pieces = explode('/', $post['thumb']);
-        $post['thumb'] = array_pop($pieces);
-        $post['detail'] = $this->imageDomain($post['detail']);
-        $model->load($post);
-        $data = ['msg' => '头条更新失败'];
-
-        if ($model->validate()) {
-            $post['update_time'] = time();
-            $model->attributes = $post;
-            $update = $model->save();
-            $update ? $data = ['id' => $model->primaryKey] : '';
+        if ($model->load(Yii::$app->getRequest()->getBodyParams(), '') && $model->save()) {
+            return $data = ['id' => $model->primaryKey, 'msg' => '头条更新成功'];
         } else {
             $validateError = $model->getFirstErrors();
-			$validateError = is_array($validateError) ? join(',', $validateError) : '';
-			$data['msg'] = $validateError;
+			$validateError = is_array($validateError) ? join(',', $validateError) : '头条更新失败';
+            throw new \yii\web\HttpException(402, $validateError);
         }
-
-        return $this->response($data);
     }
 
     /**
@@ -118,13 +137,55 @@ class GovHeadlineController extends BaseController
     {
         $model = $this->findModel($id);
         $update = $model->updateAttributes(['status' => 1, 'update_time' => time()]);
-        
-        $data = ['msg' => '删除失败'];
+
         if ($update) {
-            $data = ['id' => $model->primaryKey, 'count' => GovHeadline::find()->where(['status' => 0])->count()];
+            $data = ['id' => $model->primaryKey, 'msg' => '政府头条删除成功'];
+            return $data;
+        } else {
+            throw new \yii\web\HttpException(402, '删除失败');
         }
-        
-        return $this->response($data);
+    }
+
+    /**
+     *  Search headlines by keywords 
+     *  match the title with user input keywords 
+     *  for weapp
+     */
+    public function actionSearch()
+    {
+        $page = 1;
+        $offset = 5;
+
+        $keyword = Yii::$app->request->get('_kp');
+
+        if ($keyword) {
+            $query = [':query' => "%{$keyword}%"];
+            $query = GovHeadline::searchHeadlineByKeyword($query);
+            $provider = new ActiveDataProvider(
+                [
+                    'query' => $query,
+                    'pagination' => ['pageSize' => $offset],
+                    'sort' => [
+                        'defaultOrder' => ['create_time' => SORT_DESC]
+                    ]
+                ]
+            );
+            $data = ['set' => $provider->getModels(), 'count' => $provider->getTotalCount()];
+            return $data;
+        } else {
+            throw new \yii\web\HttpException(402, '搜索关键词不能为空');
+        }
+    }
+
+    /**
+     *  Favorite the headline
+     * 
+     */
+    public function actionFavorite()
+    {
+        $data = ['id' => 23242];
+        // more logic code to be writed 
+        return $data;
     }
 
     /**

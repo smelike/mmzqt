@@ -20,6 +20,7 @@ class m190403_084715_create_table_activity extends Migration
 		$this->createTable($tableName, [
 			'act_id' => $this->primaryKey(),
 			'type_id' => $this->tinyInteger(),
+			'thumb' => $this->string(128),
 			'title' => $this->string(128)->notNull(),
 			'act_start_time' => $this->integer(),
 			'act_end_time' => $this->integer(),
@@ -32,6 +33,7 @@ class m190403_084715_create_table_activity extends Migration
 			'tag' => $this->string(128),
 			'page_view' => $this->smallInteger()->defaultValue(0),
 			'favor_num' => $this->smallInteger()->defaultValue(0),
+			'status' => $this->tinyInteger()->defaultValue(0),
 			'create_time' => $this->integer(),
 			'update_time' => $this->integer()
 		], $tableOptions);

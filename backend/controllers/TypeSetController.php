@@ -7,28 +7,53 @@ use common\models\TypeSet;
 use common\models\TypeSetSearch;
 use yii\web\NotFoundHttpException;
 use yii\data\Pagination;
+use yii\data\ActiveDataProvider;
 
 /**
  * TypeSetController implements the CRUD actions for TypeSet model.
  */
 class TypeSetController extends BaseController
 {
+    public $modelClass = "common\models\TypeSet";
+
+    public function actions()
+	{
+		$actions = parent::actions();
+		unset($actions['index']);
+		unset($actions['create']);
+		unset($actions['update']);
+		unset($actions['view']);
+		unset($actions['delete']);
+		return $actions;
+	}
     /**
      * Lists all TypeSet models.
      * @return mixed
      */
-    public function actionIndex(string $alias = '')
+    public function actionIndex(string $alias = '', $offset = 10)
     {
-	
-		$data = ['msg' => '分类别名不能为空'];
-		if (!empty($alias)) {
-			$query = TypeSet::find()->where(['status' => 0, 'alias' => $alias])->orderBy(['type_id' => SORT_DESC]);
-			$count = $query->count();
-			$pagination = new Pagination(['totalCount' => $count]);
-			$typeSet = $query->offset($pagination->offset)->limit(10)->all();
-			$data = ['set' => $typeSet, 'count' => $count];
-		}
-		return $this->response($data);
+
+		if ($alias) {
+			$query = TypeSet::find()->where(['status' => 0, 'alias' => $alias]);
+            $provider = new ActiveDataProvider(
+                [
+                    'query' => $query,
+                    'pagination' => ['pageSize' => $offset],
+                    'sort' => [
+                    'defaultOrder' => [
+                            'type_id' => SORT_DESC,
+                        ]
+                    ]
+                ]
+            );
+            $data = [
+            'set' => $provider->getModels(),
+            'count' => $provider->getTotalCount()
+            ];
+            return $data;
+		} else {
+            throw new \yii\web\HttpException(402, '分类别名不能为空');
+        }
     }
 
     /**
@@ -40,7 +65,7 @@ class TypeSetController extends BaseController
     public function actionView(int $id)
     {
         $typeSet = $this->findModel($id);
-		return $this->response($typeSet->toArray());
+		return $typeSet;
     }
 
     /**
@@ -51,15 +76,15 @@ class TypeSetController extends BaseController
     public function actionCreate()
     {
         $model = new TypeSet();
-		
-		$response = ['msg' => '类型创建失败，刷新尝试'];
-		$post = Yii::$app->request->post();
-		$model->name = isset($post['name']) ? $post['name'] : '';
-		$model->alias = isset($post['alias']) ? $post['alias'] : '';
-        if ($model->name && $model->alias && $model->save()) {
-            $response = ['id' => $model->primaryKey];
+
+        if ($model->load(Yii::$app->getRequest()->getBodyParams()) && $model->save()) {
+            $data = ['id' => $model->primaryKey, 'msg' => '创建成功'];
+            return $data;
+        } else {
+            $validateError = $model->getFirstErrors();
+			$validateError = is_array($validateError) ? join(',', $validateError) : '';
+			throw new \yii\web\HttpException(402, $validateError);
         }
-		return $this->response($response);
     }
 
     /**
@@ -72,17 +97,15 @@ class TypeSetController extends BaseController
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-
-		$post = Yii::$app->request->post();
-		$model->name = isset($post['name']) ? $post['name'] : '';
-		//$model->alias = isset($post['alias']) ? $post['alias'] : '';
-		$model->update_time = time();
 		
-		$response = ['msg' => '类型更新失败'];
-        if ($model->name && $model->save()) {
-            $response = ['id' => $model->primaryKey];
+        if ($model->load(Yii::$app->getRequest()->getBodyParams()) && $model->save()) {
+            $data = ['id' => $model->primaryKey, 'msg' => '更新成功'];
+            return $data;
+        } else {
+            $validateError = $model->getFirstErrors();
+			$validateError = is_array($validateError) ? join(',', $validateError) : '';
+			throw new \yii\web\HttpException(402, $validateError);
         }
-		return $this->response($response);
     }
 
     /**
@@ -95,9 +118,15 @@ class TypeSetController extends BaseController
     public function actionDelete($id)
     {
         $delete = $this->findModel($id)->delete();
-		//$update = $model->updateAttributes(['status' => 1, 'update_time' => time()]);
-		$response = $delete ? ['id' => $model->primaryKey] : ['msg' => '删除失败'];
-        return $this->response($response);
+        //$update = $model->updateAttributes(['status' => 1, 'update_time' => time()]);
+        if ($delete) {
+            return [
+                'id' => $model->primaryKey,
+                'msg' => '删除成功'
+            ];
+        } else {
+            throw new \yii\web\HttpException(402, '删除失败');
+        }
     }
 
     /**

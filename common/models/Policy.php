@@ -33,11 +33,13 @@ use common\models\TypeSet;
  *
  * @property Quest[] $quests
  */
-class Policy extends \yii\db\ActiveRecord
+class Policy extends Base
 {
     /**
      * {@inheritdoc}
      */
+    CONST STATUS_ACTIVE = 0;
+    CONST IS_RECOMMEND = 1;
     public static function tableName()
     {
         return 'policy';
@@ -108,7 +110,91 @@ class Policy extends \yii\db\ActiveRecord
     {
         return new PolicyQuery(get_called_class());
     }
-	
+
+    public static function  policyStatus($slice_offset = 0)
+    {
+        $statusText = [
+            ['name' => '正常', 'value' => 0],
+            ['name' => '已被删除', 'value' => 1],
+            ['name' => '申报预告', 'value' => 2],
+            ['name' => '申报中', 'value' => 3],
+            ['name' => '申报结束', 'value' => 4]
+        ];
+        return $slice_offset ? array_slice($statusText, $slice_offset) : $statusText;
+    }
+
+    public static function getStatusText($status_key)
+    {
+       $statusText = self::policyStatus();
+
+        return array_key_exists($status_key, $statusText) ? $statusText[$status_key] : 'unknown';
+    }
+
+    public static function recommendedPolicy()
+    {
+        $where = ['status' => self::STATUS_ACTIVE, 'is_recommend' => self::IS_RECOMMEND];
+        return self::find()->where($where);
+    }
+    public static function searchPolicyByKeyWord($keyword)
+    {
+        $where ='title LIKE :query';
+        return self::find()->where($where)->addParams($keyword);
+    }
+    public function beforeSave($insert)
+    {
+        if (parent::beforeSave($insert))
+        {
+            if ($insert) {
+                $this->create_time = time();
+                $this->update_time = time();
+                $this->open_time = strtotime($this->open_time);
+                $this->end_time = strtotime($this->end_time);
+            } else {
+                $this->update_time = time();
+            }
+            $this->original_info = $this->imageDomain($this->original_info);
+            $this->manual = $this->imageDomain($this->manual);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public function getDate()
+    {
+        return [date('Y-m-d', $this->open_time), date('Y-m-d', $this->end_time)];
+    }
+    public function getOpenTime()
+    {
+        return date('Y-m-d', $this->open_time);
+    }
+    public function getEndTime()
+    {
+        return date('Y-m-d', $this->end_time);
+    }
+    public function getScaleWay()
+    {
+        return $this->hasOne(TypeSet::className(), ['type_id' => 'scale']);
+    }
+    public function getSupportWay() {
+        return $this->hasOne(TypeSet::className(), ['type_id' => 'support_way']);
+    }
+    public function getIndustryWay() {
+        return $this->hasOne(TypeSet::className(), ['type_id' => 'industry']);
+    }
+    public function getChargeDepart() {
+        return $this->hasOne(TypeSet::className(), ['type_id' => 'charge_depart']);
+    }
+    public function getNoticeMsg()
+    {
+        $less = $this->end_time - strtotime(date('Y-m-d', time()));
+        $less = $less/3600/24;
+        $msg = "离申报结束{$less}天";
+        return $msg;
+    }
+    public function getTag()
+    {
+        return ['减税', '品牌', '转型'];
+    }
     /**
      * {@inheritdoc}
      * @return the list of fields 
@@ -119,55 +205,80 @@ class Policy extends \yii\db\ActiveRecord
 
 			case 'update':
 				return [
-					'policy_id',
-					'title',
-					'thumb',
-					'type_id',
+                    'policy_id', 'type_id', 'title', 'thumb', 'age', 'rank',
+                    'brief' => function($model) {
+                        return $model->imageDomain($this->brief, true);
+                    },
+                    'requirement' => function($model) {
+                        return $model->imageDomain($this->requirement, true);
+                    },
+                    'support_content' =>  function($model) {
+                        return $model->imageDomain($this->support_content, true);
+                    },
+                    'material' => function($model) {
+                        return $model->imageDomain($this->material, true);
+                    }, 
+                    'original_info' => function($model) {
+                        return $model->imageDomain($this->original_info, true);
+                    },
+                    'manual' => function($model) {
+                        return $model->imageDomain($this->manual, true);
+                    },
+                    'full_thumb' => function () {
+                        return Yii::$app->params['imageDomain'] . '/' . $this->thumb;
+                    },
 					'open_time' => function() {
 						return date('Y-m-d', $this->open_time);
 					},
 					'end_time' => function() {
 						return date('Y-m-d', $this->end_time);
 					},
-					/*
-					'create_time' => function() {
-						return date('Y-m-d', $this->create_time);
-					},*/
-					'support_way',
-					'charge_depart',
-					'industry',
-					'scale',
-					'age',
-					'brief',
-					'requirement',
-					'support_content',
-					'material',
-					'original_info',
-					'manual',
-					'rank',
-					'status',
+                    'support_way',
+                    'support_way_name' => function ($model) {
+						return $model->supportWay->name;
+					},
+                    'charge_depart',
+                    'charge_depart_name' => function ($model) {
+                        return $model->chargeDepart->name;
+                    },
+                    'industry',
+                    'industry_name' => function ($model) {
+                        return $model->industryWay->name;
+                    },
+                    'scale',
+                    'scale_name' => function ($model) {
+                       return $model->scaleWay->name;
+                    },
+                    'status',
 					'is_recommend',
 					'date' => function() {
-						return [date('Y-m-d', $this->open_time), date('Y-m-d', $this->end_time)];
+                        return $this->Date;
 					}
 				];
 			
 			default: 
 				return [
-					'policy_id',
-					'title',
-					'thumb',
-					'type_id',
-					'support_way' => function() {
+					'policy_id', 'title', 'thumb', 'type_id',
+                    'full_thumb' => function () {
+                        return Yii::$app->params['imageDomain'] . '/' . $this->thumb;
+                    },
+					'support_way' => function () {
 						$typeSet = TypeSet::findOne($this->support_way);
 						return $typeSet ? $typeSet->name : '-';
 					},
 					'open_time' => function() {
-						return date('Y-m-d', $this->open_time);
+						return $this->OpenTime;
 					},
 					'end_time' => function() {
-						return date('Y-m-d', $this->end_time);
-					}
+						return $this->EndTime;
+                    },
+                    'end_time_msg' => function() {
+                        return $this->NoticeMsg;
+                    },
+                    'tags' => function () {
+                        return  $this->Tag;
+                    },
+                    'is_recommend'
 				];
 		}
     }

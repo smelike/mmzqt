@@ -9,10 +9,10 @@ use yii\base\Model;
  */
 class LoginForm extends Model
 {
-    public $login_name;
+    public $username;
     public $password;
     public $rememberMe = true;
-
+    public $access_token;
     private $_user;
 
 
@@ -24,7 +24,7 @@ class LoginForm extends Model
 		
         return [
             // username and password are both required
-            [['login_name', 'password'], 'required', 'message' => '请先登录，再进行操作'],
+            [['username', 'password'], 'required', 'message' => '请先登录，再进行操作'],
             // rememberMe must be a boolean value
             //['rememberMe', 'boolean'],
             // password is validated by validatePassword()
@@ -57,12 +57,30 @@ class LoginForm extends Model
     public function login()
     {
         if ($this->validate()) {
-            return Yii::$app->user->login($this->getUser(), $this->rememberMe ? 3600 * 24 * 30 : 0);
+            $access_token = $this->_user->generateAccessToken();
+            $this->_user->save();
+            return $access_token;
+        } else {
+            return false;
         }
-        
-        return false;
     }
 
+    public function logout()
+    {
+        if ($this->getUserByToken()) {
+            $this->_user->access_token = '';
+            $this->_user->save();
+        }
+        return true;
+    }
+
+    protected function getUserByToken()
+    {
+        if ($this->_user === null) {
+            $this->_user = User::findIdentityByAccessToken($this->access_token);
+        }
+        return $this->_user;
+    }
     /**
      * Finds user by [[username]]
      *
@@ -71,7 +89,8 @@ class LoginForm extends Model
     protected function getUser()
     {
         if ($this->_user === null) {
-            $this->_user = User::findByUsername($this->login_name);
+
+            $this->_user = User::findByUsername($this->username);
         }
 
         return $this->_user;

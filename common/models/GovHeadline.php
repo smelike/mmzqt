@@ -17,7 +17,7 @@ use common\models\TypeSet;
  * @property int $create_time 创建时间
  * @property int $update_time 更新时间
  */
-class GovHeadline extends \yii\db\ActiveRecord
+class GovHeadline extends Base
 {
     /**
      * {@inheritdoc}
@@ -74,6 +74,44 @@ class GovHeadline extends \yii\db\ActiveRecord
         return new GovHeadlineQuery(get_called_class());
     }
 
+    public function beforeSave($insert)
+    {
+        if (parent::beforeSave($insert)) {
+            if ($insert) {
+                $this->create_time = time();
+                $this->update_time = time();
+            } else {
+                $this->update_time = time();
+            }
+            $this->thumb = $this->Thumb;
+            $this->detail = $this->imageDomain($this->detail);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public static function searchHeadlineByKeyword($keyword)
+    {
+        $where = 'title LIKE :query';
+        return self::find()->where($where)->addParams($keyword);
+    }
+    public function getThumb()
+    {
+        $thumbs = explode('/', $this->thumb);
+        return array_pop($thumbs);
+    }
+    public function getCreateTime()
+    {
+        return date('Y-m-d', $this->create_time);
+    }
+    public function getTypeName()
+    {
+        return $this->hasOne(TypeSet::className(), ['type_id' => 'type_id']);
+    }
+    public function getFullPathThumb()
+    {
+        return Yii::$app->params['imageDomain'] . '/' . $this->thumb;
+    }
     public function fields()
     {
         switch ($this->scenario) {
@@ -83,7 +121,10 @@ class GovHeadline extends \yii\db\ActiveRecord
                     'title', 
                     'type_id', 
                     'thumb', 
-                    'detail',                     'favor_num' => function () {
+                    'detail' => function($model) {
+                        return $model->imageDomain($this->detail, true);
+                    },       
+                    'favor_num' => function () {
                         return $this->favor_num ? $this->favor_num : 0;
                     },
                     'page_view' => function () {
@@ -96,14 +137,14 @@ class GovHeadline extends \yii\db\ActiveRecord
                     'title',
                     'type_id',
                     'type_name' => function () {
-                        $typeSet = TypeSet::findOne($this->type_id);
-                        return $typeSet ? $typeSet->name : '-';
+                       return $this->typeName->name;
                     },
-                    'thumb' => function() {
-                        return Yii::$app->params['imageDomain'] . '/' . $this->thumb;
-                    },
+                    'thumb',
+                    'full_thumb' => function () {
+                       return $this->FullPathThumb;
+                    },   
                     'create_time' => function() {
-                        return date('Y-m-d', $this->create_time);
+                        return $this->CreateTime;
                     }
                 ];
         }

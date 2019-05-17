@@ -16,6 +16,7 @@ class m190403_090510_add_column_comment_on_activity extends Migration
 		
 		$this->addCommentOnColumn($tableName, 'act_id', '主键ID');
 		$this->addCommentOnColumn($tableName, 'type_id', '活动类型ID');
+		$this->addCommentOnColumn($tableName, 'thumb', '活动封面图');
 		$this->addCommentOnColumn($tableName, 'title', '活动标题');
 		$this->addCommentOnColumn($tableName, 'act_start_time', '活动开始时间');
 		$this->addCommentOnColumn($tableName, 'act_end_time', '活动结束时间');
@@ -28,6 +29,7 @@ class m190403_090510_add_column_comment_on_activity extends Migration
 		$this->addCommentOnColumn($tableName, 'tag', '活动标签');
 		$this->addCommentOnColumn($tableName, 'page_view', '浏览次数');
 		$this->addCommentOnColumn($tableName, 'favor_num', '收藏量');
+		$this->addCommentOnColumn($tableName, 'status', '活动状态');
 		$this->addCommentOnColumn($tableName, 'create_time', '创建时间');
 		$this->addCommentOnColumn($tableName, 'update_time', '更新时间');
     }

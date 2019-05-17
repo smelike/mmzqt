@@ -3,6 +3,7 @@
 namespace common\models;
 
 use Yii;
+use common\models\TypeSet;
 
 /**
  * This is the model class for table "type_group".
@@ -27,6 +28,7 @@ class TypeGroup extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
+            [['alias', 'group_name'], 'required'],
             [['alias'], 'string', 'max' => 64],
             [['group_name'], 'string', 'max' => 128],
 			[['status'], 'default', 'value' => 0]
@@ -53,5 +55,10 @@ class TypeGroup extends \yii\db\ActiveRecord
     public static function find()
     {
         return new TypeGroupQuery(get_called_class());
+    }
+
+    public function getTypeSet()
+    {
+        return $this->hasMany(TypeSet::className(), ['alias' => 'alias']);
     }
 }

@@ -62,4 +62,28 @@ class TypeSet extends \yii\db\ActiveRecord
     {
         return new TypeSetQuery(get_called_class());
     }
+
+    public static function queryTypeset($columns, $condition = [])
+    {
+        if ($condition) {
+            return self::find()->select($columns)->where($condition)->all();
+        } else {
+            return self::find()->select($columns)->all();
+        }
+    }
+    public function beforeSave($insert)
+    {
+        if (parent::beforeSave($insert))
+        {
+            if ($insert) {
+                $this->create_time = time();
+                $this->update_time = time();
+            } else {
+                $this->update_time = time();
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

@@ -3,65 +3,35 @@
 namespace backend\controllers;
 
 use Yii;
+use yii\filters\auth\QueryParamAuth;
 
-class BaseController extends \yii\rest\Controller
+class BaseController extends \yii\rest\ActiveController
 {
 	public $enableCsrfValidation = false;
-	
-    public function beforeAction($action)
+
+	public function behaviors()
 	{
-        $token = Yii::$app->request->headers->get('X-Token');
-        $uniqueId = $action->uniqueId;
-        $controller = $action->controller;
-        // 40001 - no-token
-		// 40002 - token 匹配不上
-		// 40003 - token 过时
-        if (empty($token) && $uniqueId != 'site/login') {
-            $this->asJson([
-                'code' => 40001,
-                'data' => [
-					'msg' => '没有 token',
-				]
-            ]);
+		$behaviors = parent::behaviors();
+		
+		$behaviors['authenticator'] = [
+			'class' => QueryParamAuth::className(),
+			'except' => ['login','logout']
+		];
 
-            return false;
-        }
-
-        return parent::beforeAction($action);
-    }
-	
-	public function response($data) 
-	{	
-		Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-		$code = empty($data['msg']) ? 0 : 1;
-		$response = ['code' => $code, 'data' => $data];
-		return $this->asJson($response);
+		return $behaviors;
 	}
 
-	/*
-	 * Replace the url-path in rich-text content tag-img's attribute src. 
-	 * Use the identifier {ES668_IMAGE_DOMAIN} instead of the url path.
-	 * Define the constant in config/params.php
-	 * @param $orientation 
-	 * false means replace the url-path to identifier
-	 * true means 
+	/**
+	 *  Paginate the query result
+	 *  @return array ('set' => , 'count' => )
 	*/
-	protected function imageDomain($richText, $orientation = false)
+	protected function paginateQueryResult($query, $page = 1, $offset = 5)
 	{
-		//$pattern = "/src=\"(http|https):\/\/\w+.?\w+\.(com|cn|net):?[0-9]+/i";
-		
-		$identifier = "src=\"{ES668_IMAGE_DOMAIN}";
-		
-		if ($orientation) {
-			$search = $identifier;
-			$replacement = "src=\"" . Yii::$app->params['imageDomain'];
-			$richText = str_replace($search, $replacement, $richText);
-		} else {
-			$pattern = "/src=\"(http|https):\/\/\w+.?\w+\.(com|cn|net)(:?[0-9]+)?/i";		
-			$richText = preg_replace($pattern, $identifier, $richText);
-		}
-		
-		return $richText;
-	}
+			$count = $query->count();
+			// $pagination = new Pagination(['totalCount' => $count]);
+			$start = ($page - 1) * $offset;
+			$rows = $query->offset($start)->limit($offset)->all();
 
+			return ['set' => $rows, 'count' => $count];
+	}
 }

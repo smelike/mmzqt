@@ -3,7 +3,8 @@ $params = array_merge(
     require __DIR__ . '/../../common/config/params.php',
     require __DIR__ . '/../../common/config/params-local.php',
     require __DIR__ . '/params.php',
-    require __DIR__ . '/params-local.php'
+    require __DIR__ . '/params-local.php',
+    require __DIR__ . '/params-index-page.php'
 );
 
 return [
@@ -19,6 +20,10 @@ return [
 			'parsers' => [
 				'application/json' => 'yii\web\JsonParser',
 			]
+        ],
+        'response' => [                 
+            'format' => yii\web\Response::FORMAT_JSON, 
+            'charset' => 'UTF-8',               
         ],
         'user' => [
             'identityClass' => 'common\models\User',
@@ -44,34 +49,71 @@ return [
         ],
         'urlManager' => [
             'enablePrettyUrl' => true,
+            'enableStrictParsing' => false,
             'showScriptName' => false,
             'rules' => [
-				'type-set' => 'type-set/index',
-				'type-set/create' => 'type-set/create',
-				'type-set/<alias:\w+>' => 'type-set/index',
-				'type-set/view/<id:\d+>' => 'type-set/view',
-				'type-set/update/<id:\d+>' => 'type-set/update',
-                'type-set/delete/<id:\d+>' => 'type-set/delete',
-                
-				'policy' => 'policy/index',
-				'policy/<page:\d+>/<offset:\d+>' => 'policy/index',
-				'policy/view/<id:\d+>' => 'policy/view',
-				'policy/update/<id:\d+>' => 'policy/update',
-				'policy/delete/<id:\d+>' => 'policy/delete',
-                
-                'type-group' => 'type-group/index',
-				'type-group/<page:\d+>/<offset:\d+>' => 'type-group/index',
-				'type-group/view/<id:\d+>' => 'type-group/view',
-				'type-group/update/<id:\d+>' => 'type-group/update',
-                'type-group/delete/<id:\d+>' => 'type-group/delete',
-                
-                'gov-headline' => 'gov-headline/index',
-                'gov-headline/<page:\d+>/<offset:\d+>' => 'gov-headline/index',
-                'gov-headline/view/<id:\d+>' => 'gov-headline/view',
-                'gov-headline/update/<id:\d+>' => 'gov-headline/update',
-                'gov-headline/delete/<id:\d+>' => 'gov-headline/delete'
-                
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => 'user',
+                    'only' => ['login', 'logout'],
+                    'extraPatterns'=>[
+                        'POST login'=>'login',
+                        'GET logout'=>'logout'
+                    ],
+                ],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => 'type-group'
+                ],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => 'type-set'
+                ],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => 'policy',
+                    'extraPatterns'=>[
+                        'GET search' => 'search',
+                        'GET recommend' => 'recommend'
+                    ]
+                ],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => 'gov-headline',
+                    'extraPatterns'=>[
+                        'GET search'=>'search'
+                    ]
+                ],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => 'sort',
+                    'extraPatterns' => [
+                        'GET policy' => 'policy',
+                        'GET policy-more' => 'policy-more'
+                    ]
+                ],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => 'upload'
+                ],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => 'activity'
+                ]
             ],
+        ],
+        'response' => [
+            'class' => 'yii\web\Response',
+            'on beforeSend' => function ($event) {
+                $response = $event->sender;
+                if ($response->data !== null) {
+                    $response->data = [
+                        'success' => $response->isSuccessful,
+                        'data' => $response->data,
+                    ];
+                $response->statusCode = 200;
+                }
+            },
         ],
     ],
     'params' => $params,

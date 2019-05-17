@@ -11,7 +11,7 @@ use yii\web\IdentityInterface;
  * User model
  *
  * @property integer $user_id
- * @property string $login_name
+ * @property string $username
  * @property string $password
  * @property string $token
  * @property string $email
@@ -23,11 +23,10 @@ use yii\web\IdentityInterface;
  */
 class User extends ActiveRecord implements IdentityInterface
 {
-    const STATUS_DELETED = 10;
+    const STATUS_DELETED = 0;
     const STATUS_INACTIVE = 9;
-    const STATUS_ACTIVE = 0;
-
-
+    const STATUS_ACTIVE = 10;
+    
     /**
      * {@inheritdoc}
      */
@@ -70,7 +69,8 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public static function findIdentityByAccessToken($token, $type = null)
     {
-        throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
+        // throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
+        return static::findOne(['access_token' => $token]);
     }
 
     /**
@@ -81,7 +81,7 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public static function findByUsername($username)
     {
-        return static::findOne(['login_name' => $username, 'status' => self::STATUS_ACTIVE]);
+        return static::findOne(['username' => $username, 'status' => self::STATUS_ACTIVE]);
     }
 
     /**
@@ -145,7 +145,7 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public function getAuthKey()
     {
-        return $this->token;
+        return $this->access_token;
     }
 
     /**
@@ -164,9 +164,7 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public function validatePassword($password)
     {
-        //return Yii::$app->security->validatePassword($password, $this->password);
-        //return md5($password)  === $this->password ? true : false;
-        return $password  === $this->password;
+        return Yii::$app->security->validatePassword($password, $this->password_hash);
     }
 
     /**
@@ -206,5 +204,11 @@ class User extends ActiveRecord implements IdentityInterface
     public function removePasswordResetToken()
     {
         $this->password_reset_token = null;
+    }
+
+    public function generateAccessToken()
+    {
+        $this->access_token = Yii::$app->security->generateRandomString();
+        return $this->access_token;
     }
 }
